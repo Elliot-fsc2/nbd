@@ -1,18 +1,10 @@
 import type { PageProps } from '@inertiajs/core';
 import { useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -20,7 +12,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import { register } from '@/routes';
 
 interface Course {
@@ -391,38 +382,7 @@ return prev;
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="birthdate">Date of Birth <span className="text-red-500">*</span></Label>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    id="birthdate"
-                                                    variant="outline"
-                                                    className={cn(
-                                                        'w-full justify-start text-left font-normal',
-                                                        !data.birthdate && 'text-muted-foreground',
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {data.birthdate ? format(new Date(data.birthdate + 'T00:00:00'), 'PPP') : <span>Pick a date</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={data.birthdate ? new Date(data.birthdate + 'T00:00:00') : undefined}
-                                                    onSelect={(d) => {
-                                                        if (d) {
-                                                            const formatted = format(d, 'yyyy-MM-dd');
-                                                            setData('birthdate', formatted);
-                                                            setData('age', computeAge(formatted));
-                                                        }
-                                                    }}
-                                                    disabled={(d) => d > new Date() || d < new Date('1900-01-01')}
-                                                    captionLayout="dropdown-buttons"
-                                                    fromYear={1920}
-                                                    toYear={new Date().getFullYear()}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
+                                        <Input id="birthdate" type="date" value={data.birthdate} onChange={(e) => updateBirthdate(e.target.value)} />
                                         {(zodErrors.birthdate || errors.birthdate) && <p className="text-xs text-destructive">{zodErrors.birthdate || errors.birthdate}</p>}
                                     </div>
                                     <div className="space-y-2">
