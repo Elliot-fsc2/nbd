@@ -22,6 +22,34 @@ class QueueController extends Controller
         ]);
     }
 
+    public function display(BloodDonationEvent $event): Response
+    {
+        $current = $event->registrations()
+            ->with('donor', 'hospital')
+            ->where('status', 'in_progress')
+            ->first();
+
+        $next = $event->registrations()
+            ->with('donor', 'hospital')
+            ->where('status', 'checked_in')
+            ->orderBy('queue_number')
+            ->take(3)
+            ->get();
+
+        $waiting = $event->registrations()
+            ->with('donor', 'hospital')
+            ->where('status', 'checked_in')
+            ->orderBy('queue_number')
+            ->get();
+
+        return Inertia::render('staff/queue/display', [
+            'event' => $event,
+            'current' => $current,
+            'next' => $next,
+            'waiting' => $waiting,
+        ]);
+    }
+
     public function eventQueue(BloodDonationEvent $event): Response
     {
         $current = $event->registrations()

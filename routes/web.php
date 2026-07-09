@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicController::class, 'form'])->name('home');
 Route::post('/register', [PublicController::class, 'submit'])->name('register');
 
+Route::get('/queue/{event}/display', [QueueController::class, 'display'])->name('queue.display');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');

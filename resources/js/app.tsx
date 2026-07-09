@@ -13,7 +13,7 @@ createInertiaApp({
     resolve: async (name) => {
         const page = await resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx'));
 
-        if (!name.startsWith('welcome') && !name.startsWith('auth/')) {
+        if (!name.startsWith('welcome') && !name.startsWith('auth/') && !name.endsWith('display')) {
             const mod = page as { default: { layout?: React.ComponentType<{ children: React.ReactNode }> } };
             mod.default.layout = mod.default.layout || AuthenticatedLayout;
         }
