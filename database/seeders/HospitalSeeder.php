@@ -9,7 +9,9 @@ class HospitalSeeder extends Seeder
 {
     public function run(): void
     {
-        Hospital::create(['name' => 'Victoria Memorial Medical Center', 'code' => 'VMC']);
-        Hospital::create(['name' => 'Philippine General Hospital', 'code' => 'PGH']);
+        Hospital::firstOrCreate(['code' => 'VMMC'], ['name' => 'Veterans Memorial Medical Center']);
+        Hospital::firstOrCreate(['code' => 'PGH'], ['name' => 'Philippine General Hospital']);
+        Hospital::firstOrCreate(['code' => 'RedCross'], ['name' => 'Red Cross']);
+        Hospital::firstOrCreate(['code' => 'UMC'], ['name' => 'De la Salle University Medical Center']);
     }
 }
