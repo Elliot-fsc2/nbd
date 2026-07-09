@@ -49,6 +49,7 @@ type FormData = {
     occupation: string;
     house_heroes: string;
     course_id: string;
+    year_section: string;
     house_no: string;
     street: string;
     subdivision: string;
@@ -74,6 +75,7 @@ const initialData: FormData = {
     occupation: '',
     house_heroes: '',
     course_id: '',
+    year_section: '',
     house_no: '',
     street: '',
     subdivision: '',

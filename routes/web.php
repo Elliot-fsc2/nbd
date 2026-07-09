@@ -32,6 +32,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('events/{event}/donors', [EventController::class, 'donors'])->name('events.donors');
 
     Route::get('donors', [DonorController::class, 'index'])->name('donors.index');
+    Route::get('donors/{donor}/form', [DonorController::class, 'form'])->name('donors.form');
 
     Route::resource('departments', DepartmentController::class)->except(['show']);
     Route::resource('courses', CourseController::class)->except(['show', 'create', 'edit']);
