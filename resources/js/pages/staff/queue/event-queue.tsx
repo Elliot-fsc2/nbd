@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { display } from '@/routes/queue';
+import { copyToClipboard } from '@/lib/utils';
 import staff from '@/routes/staff';
 
 interface Donor {
@@ -76,7 +77,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                    navigator.clipboard.writeText(window.location.origin + display.url(event.id));
+                                    copyToClipboard(window.location.origin + display.url(event.id));
                                     toast.success('Display link copied!');
                                 }}
                             >

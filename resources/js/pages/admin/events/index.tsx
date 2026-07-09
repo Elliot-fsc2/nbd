@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { display } from '@/routes/queue';
+import { copyToClipboard } from '@/lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -126,7 +127,7 @@ export default function EventsIndex({ events }: Props) {
                                             size="sm"
                                             className="mr-3 text-sm text-muted-foreground hover:text-foreground"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(window.location.origin + display.url(event.id));
+                                                copyToClipboard(window.location.origin + display.url(event.id));
                                                 toast.success('Display link copied!');
                                             }}
                                         >
