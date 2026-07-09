@@ -3,6 +3,8 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { display } from '@/routes/queue';
 import {
     Dialog,
     DialogContent,
@@ -119,6 +121,17 @@ export default function EventsIndex({ events }: Props) {
                                         <Link href={admin.events.donors(event.id).url} className="mr-3 text-sm text-muted-foreground hover:text-foreground">
                                             Donors
                                         </Link>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="mr-3 text-sm text-muted-foreground hover:text-foreground"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(window.location.origin + display.url(event.id));
+                                                toast.success('Display link copied!');
+                                            }}
+                                        >
+                                            Share Display
+                                        </Button>
                                         <Link href={admin.events.edit(event.id).url} className="mr-3 text-sm text-muted-foreground hover:text-foreground">
                                             Edit
                                         </Link>
