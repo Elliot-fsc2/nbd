@@ -133,6 +133,14 @@ export default function EventsIndex({ events }: Props) {
                                         >
                                             Share Display
                                         </Button>
+                                        <a
+                                            href={display.url(event.id)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mr-3 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+                                        >
+                                            TV Display
+                                        </a>
                                         <Link href={admin.events.edit(event.id).url} className="mr-3 text-sm text-muted-foreground hover:text-foreground">
                                             Edit
                                         </Link>

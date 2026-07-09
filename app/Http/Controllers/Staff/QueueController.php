@@ -27,7 +27,7 @@ class QueueController extends Controller
         $current = $event->registrations()
             ->with('donor', 'hospital')
             ->where('status', 'in_progress')
-            ->first();
+            ->get();
 
         $next = $event->registrations()
             ->with('donor', 'hospital')
@@ -55,12 +55,13 @@ class QueueController extends Controller
         $current = $event->registrations()
             ->with('donor')
             ->where('status', 'in_progress')
-            ->first();
+            ->get();
 
         $waiting = $event->registrations()
             ->with('donor')
             ->where('status', 'checked_in')
             ->orderBy('queue_number')
+            ->take(100)
             ->get();
 
         $completed = $event->registrations()
@@ -141,7 +142,7 @@ class QueueController extends Controller
 
         $registration->donor->update(['status' => 'in_progress']);
 
-        Mail::to($registration->donor->email)->send(new QueueCalledMail($registration));
+        // Mail::to($registration->donor->email)->queue(new QueueCalledMail($registration));
 
         return back()->with('success', 'Donor called.');
     }

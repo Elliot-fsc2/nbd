@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { usePoll } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ interface Event {
 
 interface EventQueueProps {
     event: Event;
-    current: EventRegistration | null;
+    current: EventRegistration[];
     waiting: EventRegistration[];
     completed: EventRegistration[];
 }
@@ -101,31 +101,34 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                     <div className="lg:col-span-2 space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Current</CardTitle>
+                                <CardTitle>Serving ({current.length})</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {current ? (
-                                    <div className="rounded-lg border-2 border-primary bg-primary/5 p-4">
-                                        <p className="text-3xl font-bold text-primary">
-                                            #{current.queue_number}
-                                        </p>
-                                        <p className="mt-2 text-xl font-semibold">
-                                            {current.donor.full_name}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            ID: {current.donor.id_number ?? 'N/A'}
-                                        </p>
-                                        <div className="mt-4 flex gap-3">
-                                            <form action={staff.queue.complete(current.id)?.url || `/staff/queue/${current.id}/complete`} method="post">
-                                                <Button type="submit" variant="default">Complete</Button>
-                                            </form>
-                                            <form action={staff.queue.skip(current.id)?.url || `/staff/queue/${current.id}/skip`} method="post">
-                                                <Button type="submit" variant="secondary">Skip</Button>
-                                            </form>
-                                        </div>
-                                    </div>
+                                {current.length === 0 ? (
+                                    <p className="text-muted-foreground">No donors currently in progress.</p>
                                 ) : (
-                                    <p className="text-muted-foreground">No donor currently in progress.</p>
+                                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        {current.map((reg, i) => (
+                                            <div key={reg.id} className="rounded-lg border-2 border-primary bg-primary/5 p-4">
+                                                <p className="text-xs font-semibold text-primary/60 uppercase tracking-wider mb-1">
+                                                    Booth {i + 1}
+                                                </p>
+                                                <p className="text-3xl font-bold text-primary">
+                                                    #{reg.queue_number}
+                                                </p>
+                                                <p className="mt-2 text-xl font-semibold">
+                                                    {reg.donor.full_name}
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    ID: {reg.donor.id_number ?? 'N/A'}
+                                                </p>
+                                                <div className="mt-4 flex gap-3">
+                                                    <Button onClick={() => router.post(staff.queue.complete(reg.id)?.url || `/staff/queue/${reg.id}/complete`)} variant="default">Complete</Button>
+                                                    <Button onClick={() => router.post(staff.queue.skip(reg.id)?.url || `/staff/queue/${reg.id}/skip`)} variant="secondary">Skip</Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -159,9 +162,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                         <Badge variant="secondary">Waiting</Badge>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <form action={staff.queue.next(reg.id)?.url || `/staff/queue/${reg.id}/next`} method="post">
-                                                            <Button type="submit" size="sm">Call</Button>
-                                                        </form>
+                                                            <Button onClick={() => router.post(staff.queue.next(reg.id)?.url || `/staff/queue/${reg.id}/next`)} size="sm">Call</Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

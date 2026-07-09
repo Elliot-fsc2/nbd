@@ -33,7 +33,7 @@ class DonorFactory extends Factory
                 'age' => $age,
                 'sex' => fake()->randomElement(['male', 'female']),
                 'civil_status' => fake()->randomElement(['single', 'married', 'divorced', 'widowed']),
-                'blood_type' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']),
+                'blood_type' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', 'Unknown']),
                 'street' => fake()->streetAddress(),
                 'barangay' => fake()->city(),
                 'city_province' => fake()->city().', '.fake()->state(),

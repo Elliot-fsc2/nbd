@@ -157,6 +157,14 @@ return prev;
             'Full name should only contain letters',
         ),
         id_number: z.string().optional(),
+        year_section: z.string().optional(),
+    }).superRefine((val, ctx) => {
+        if (!isRepresentative && !val.id_number) {
+            ctx.addIssue({ code: 'custom', path: ['id_number'], message: 'Student/Employee ID is required' });
+        }
+        if (!isRepresentative && !val.house_heroes) {
+            ctx.addIssue({ code: 'custom', path: ['house_heroes'], message: 'House of Heroes is required' });
+        }
     });
 
     function handleNext() {
@@ -176,7 +184,9 @@ return prev;
 
         if (isRepresentative) {
             fields.representative_full_name = data.representative_full_name;
+            fields.id_number = data.id_number;
         } else {
+            fields.id_number = data.id_number;
             fields.house_heroes = data.house_heroes;
             fields.course_id = data.course_id;
         }
@@ -212,6 +222,7 @@ return prev;
 
         post(register.url(), {
             onSuccess: () => setSubmitted(true),
+            onError: () => setStep(1),
         });
     }
 
@@ -309,10 +320,16 @@ return prev;
                                         type="checkbox"
                                         checked={isRepresentative}
                                         onChange={(e) => {
-                                            setIsRepresentative(e.target.checked);
+                                            const checked = e.target.checked;
+                                            setIsRepresentative(checked);
                                             setData({
                                                 ...data,
-                                                donor_type: e.target.checked ? 'representative' : '',
+                                                donor_type: checked ? 'representative' : '',
+                                                id_number: '',
+                                                representative_full_name: '',
+                                                house_heroes: '',
+                                                course_id: '',
+                                                year_section: '',
                                             });
                                         }}
                                         className="mt-1 size-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
@@ -329,6 +346,7 @@ return prev;
                                         <div className="space-y-2">
                                             <Label htmlFor="id_number">Student/Employee ID</Label>
                                             <Input id="id_number" value={data.id_number} onChange={(e) => setData('id_number', e.target.value)} placeholder="e.g. 2024-00123" />
+                                            {(zodErrors.id_number || errors.id_number) && <p className="text-xs text-destructive">{zodErrors.id_number || errors.id_number}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="representative_full_name">Full Name</Label>
@@ -394,7 +412,7 @@ return prev;
                                         <Select value={data.blood_type} onValueChange={(v) => setData('blood_type', v)}>
                                             <SelectTrigger id="blood_type"><SelectValue placeholder="Select..." /></SelectTrigger>
                                             <SelectContent>
-                                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bt) => (
+                                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'].map((bt) => (
                                                     <SelectItem key={bt} value={bt}>{bt}</SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -425,6 +443,15 @@ return prev;
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Student/Employee ID (for non-representatives) */}
+                                {!isRepresentative && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="id_number">Student/Employee ID <span className="text-red-500">*</span></Label>
+                                        <Input id="id_number" value={data.id_number} onChange={(e) => setData('id_number', e.target.value)} placeholder="e.g. 2024-00123" />
+                                        {(zodErrors.id_number || errors.id_number) && <p className="text-xs text-destructive">{zodErrors.id_number || errors.id_number}</p>}
+                                    </div>
+                                )}
 
                                 {/* Course */}
                                 {!isRepresentative && (
@@ -529,7 +556,10 @@ return prev;
                                             ['Sex', data.sex === 'male' ? 'Male' : 'Female'],
                                             ['Civil Status', data.civil_status.charAt(0).toUpperCase() + data.civil_status.slice(1)],
                                             ['Occupation', data.occupation],
-                                            ['House of Heroes', houseOfHeroes.find((h) => h.value === data.house_heroes)?.label || '—'],
+                                            ...(isRepresentative ? [] : [
+                                                ['Student/Employee ID', data.id_number || '—'],
+                                                ['House of Heroes', houseOfHeroes.find((h) => h.value === data.house_heroes)?.label || '—'],
+                                            ] as [string, string][]),
                                             ['House No/Street', data.house_no || (data.street || '—')],
                                             ['Barangay', data.barangay],
                                             ['City/Province', data.city_province],
@@ -551,7 +581,7 @@ return prev;
                                             <span>🔁</span>
                                             <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Donating as Representative For</p>
                                         </div>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-gray-100">
+                                        <div className="grid grid-cols-2 gap-px bg-gray-100">
                                             {[
                                                 ['Student/Employee ID', data.id_number],
                                                 ['Full Name', data.representative_full_name],

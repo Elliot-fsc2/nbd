@@ -38,7 +38,7 @@ class PublicController extends Controller
     {
         $validated = $request->validate([
             'donor_type' => ['nullable', 'string', 'in:student,employee,representative'],
-            'id_number' => ['nullable', 'string'],
+            'id_number' => ['nullable', 'string', Rule::unique('donors', 'id_number')],
             'representative_full_name' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']*$/u'],
 
             'surname' => ['required', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
@@ -48,7 +48,7 @@ class PublicController extends Controller
             'age' => ['required', 'integer', 'min:1', 'max:150'],
             'sex' => ['required', 'string', 'in:male,female'],
             'civil_status' => ['required', 'string', 'in:single,married,divorced,widowed'],
-            'blood_type' => ['required', 'string', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'blood_type' => ['required', 'string', 'in:A+,A-,B+,B-,AB+,AB-,O+,O-,Unknown,unknown'],
             'occupation' => ['nullable', 'string', 'regex:/^[\pL\pN\s.,\-\']+$/u'],
 
             'house_no' => ['nullable', 'string'],
@@ -57,7 +57,7 @@ class PublicController extends Controller
             'barangay' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
             'city_province' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
 
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', Rule::unique('donors', 'email')],
             'contact_number' => ['nullable', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'course_id' => ['nullable', 'string'],
             'year_section' => ['nullable', 'string'],
