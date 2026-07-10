@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import admin from '@/routes/admin';
 
@@ -20,6 +27,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    role: string;
 }
 
 interface Props {
@@ -32,6 +40,7 @@ function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
         email: '',
         password: '',
         password_confirmation: '',
+        role: 'staff',
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -62,6 +71,17 @@ function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
                     <Input id="add-password" type="password" placeholder="Password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
                     {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
+                <div className="space-y-2">
+                    <Label htmlFor="add-role">Role</Label>
+                    <Select value={data.role} onValueChange={(v) => setData('role', v)}>
+                        <SelectTrigger id="add-role"><SelectValue placeholder="Select role..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="staff">Staff</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                </div>
                 <div className="flex items-end">
                     <Button type="submit" disabled={processing}>
                         {processing ? 'Adding...' : 'Add User'}
@@ -88,6 +108,7 @@ function EditUserDialog({
         email: user.email,
         password: '',
         password_confirmation: '',
+        role: user.role,
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -119,13 +140,24 @@ function EditUserDialog({
                             <Input id="edit-email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
                             {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-password">New Password (optional)</Label>
-                            <Input id="edit-password" type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
-                            {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-password">New Password (optional)</Label>
+                        <Input id="edit-password" type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                        {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                     </div>
-                    <DialogFooter>
+                    <div className="space-y-2">
+                        <Label htmlFor="edit-role">Role</Label>
+                        <Select value={data.role} onValueChange={(v) => setData('role', v)}>
+                            <SelectTrigger id="edit-role"><SelectValue placeholder="Select role..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                    </div>
+                </div>
+                <DialogFooter>
                         <DialogClose asChild>
                             <Button type="button" variant="outline">Cancel</Button>
                         </DialogClose>
