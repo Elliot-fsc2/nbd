@@ -2,18 +2,19 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\DonorFormMail;
 use App\Models\Donor;
 use App\Models\Hospital;
-use App\Services\PdfGenerationService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 #[Signature('make:sample-pdf {--hospital= : Hospital ID or code to use}')]
 #[Description('Generate a sample donation form PDF prefilled with test data')]
 class GenerateSamplePdf extends Command
 {
-    public function handle(PdfGenerationService $pdfService)
+    public function handle()
     {
         if ($hospitalOption = $this->option('hospital')) {
             $hospital = Hospital::where('id', $hospitalOption)
@@ -35,7 +36,7 @@ class GenerateSamplePdf extends Command
             'status' => 'registered',
             'id_number' => 'SAMPLE-001',
             'full_name' => 'Doe, John Michael',
-            'email' => 'john.doe@example.com',
+            'email' => 'adrxyz20@gmail.com',
             'contact_number' => '09171234567',
             'assigned_hospital_id' => $hospital->id,
             'data' => [
@@ -64,23 +65,16 @@ class GenerateSamplePdf extends Command
             ],
         ]);
 
-        $this->components->task('Generating PDF', function () use ($pdfService, $donor, $hospital) {
-            $pdf = $pdfService->generate($donor);
-
-            $path = storage_path("app/public/samples/donation-form-{$hospital->code}.pdf");
-            if (! is_dir(dirname($path))) {
-                mkdir(dirname($path), 0755, true);
-            }
-
-            file_put_contents($path, $pdf);
+        $this->components->task('Sending sample PDF via email', function () use ($donor) {
+            Mail::to($donor->email)->send(new DonorFormMail($donor));
 
             return true;
         });
 
         $this->components->twoColumnDetail('Hospital', $hospital->name);
         $this->components->twoColumnDetail('Donor', $donor->full_name);
-        $this->components->twoColumnDetail('Saved to', storage_path("app/public/samples/donation-form-{$hospital->code}.pdf"));
+        $this->components->twoColumnDetail('Emailed to', $donor->email);
 
-        $this->components->success('Sample PDF generated!');
+        $this->components->success('Sample PDF sent via email!');
     }
 }
