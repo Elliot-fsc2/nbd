@@ -87,7 +87,7 @@
     <table class="w-full border text-center text-sm leading-tight mb-2">
         <tr>
             <td rowspan="3" class="border p-1" style="width:15%;">
-                <img src="{{ asset('images/vmmc.png') }}" alt="VMMC Logo" style="width:120px;height:120px;margin:0 auto;">
+                <img src="{{ public_path('images/vmmc.png') }}" alt="VMMC Logo" style="width:120px;height:120px;margin:0 auto;">
             </td>
             <td class="border p-1" style="width:50%;">
                 <div class="text-base bold">VETERANS MEMORIAL MEDICAL CENTER</div>

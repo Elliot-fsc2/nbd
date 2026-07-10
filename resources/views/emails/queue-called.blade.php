@@ -16,4 +16,4 @@ Thank you for your participation!
 
 Thanks,<br>
 {{ config('app.name') }}
-</x-mail::component>
+</x-mail::message>

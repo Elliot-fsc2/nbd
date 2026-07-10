@@ -242,7 +242,7 @@
                     <tr>
                         <td style="padding-right: 24px">
                             <img
-                                src="{{ asset('images/red-cross.png') }}"
+                                src="{{ public_path('images/red-cross.png') }}"
                                 alt="Philippine Red Cross"
                                 style="
                                     width: 40px;
@@ -254,7 +254,7 @@
                         </td>
                         <td style="padding-left: 24px">
                             <img
-                                src="{{ asset('images/DOH.png') }}"
+                                src="{{ public_path('images/DOH.png') }}"
                                 alt="Department of Health"
                                 style="
                                     width: 40px;

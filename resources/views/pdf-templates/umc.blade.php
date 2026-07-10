@@ -92,10 +92,10 @@
     <table class="mb-1" style="width: 100%;">
         <tr>
             <td style="width: 52px; vertical-align: middle;">
-                <img src="{{ asset('images/umc/institute.png') }}" alt="DLMHSI Logo" style="height:48px;width:auto; display: block;" />
+                <img src="{{ public_path('images/umc/institute.png') }}" alt="DLMHSI Logo" style="height:48px;width:auto; display: block;" />
             </td>
             <td style="width: 52px; vertical-align: middle; padding-left: 4px;">
-                <img src="{{ asset('images/umc/umc.png') }}" alt="DLSUMC Logo" style="height:48px;width:auto; display: block;" />
+                <img src="{{ public_path('images/umc/umc.png') }}" alt="DLSUMC Logo" style="height:48px;width:auto; display: block;" />
             </td>
             <td style="padding-left: 10px; vertical-align: middle;">
                 <h1 class="text-11 bolder uppercase tracking-wide" style="letter-spacing:0.5px; margin: 0; line-height: 1.2;">DE LA SALLE UNIVERSITY MEDICAL CENTER</h1>

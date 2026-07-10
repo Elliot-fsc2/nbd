@@ -56,7 +56,7 @@ class PublicController extends Controller
             'barangay' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
             'city_province' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
 
-            'email' => ['required', 'email', Rule::unique('donors', 'email')],
+            'email' => ['required', 'email', app()->isProduction() ? Rule::unique('donors', 'email') : ''],
             'contact_number' => ['nullable', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'course_id' => ['nullable', 'string'],
             'year_section' => ['nullable', 'string'],

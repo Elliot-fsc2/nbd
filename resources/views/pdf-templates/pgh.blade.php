@@ -114,10 +114,10 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 55px; vertical-align: middle;">
-                            <img src="{{ asset('images/UP.png') }}" alt="UP Seal" style="height: 52px; width: auto; display: block;" />
+                            <img src="{{ public_path('images/UP.png') }}" alt="UP Seal" style="height: 52px; width: auto; display: block;" />
                         </td>
                         <td style="width: 55px; vertical-align: middle; padding-left: 4px;">
-                            <img src="{{ asset('images/pgh.png') }}" alt="PGH Logo" style="height: 52px; width: auto; display: block;" />
+                            <img src="{{ public_path('images/pgh.png') }}" alt="PGH Logo" style="height: 52px; width: auto; display: block;" />
                         </td>
                         <td style="padding-left: 10px; vertical-align: middle;">
                             <p class="bold text-10 uppercase" style="letter-spacing: -0.2px; margin: 0; line-height: 1.2;">Department of Laboratories &ndash; Division of Blood Bank</p>
