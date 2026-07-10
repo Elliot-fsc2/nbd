@@ -20,19 +20,12 @@ interface Course {
     department: { id: number; name: string } | null;
 }
 
-interface Hospital {
-    id: number;
-    name: string;
-    code: string;
-}
-
 interface HouseOfHeroesOption {
     value: string;
     label: string;
 }
 
 interface WelcomeProps extends PageProps {
-    hospitals: Hospital[];
     courses: Course[];
     houseOfHeroes: HouseOfHeroesOption[];
 }

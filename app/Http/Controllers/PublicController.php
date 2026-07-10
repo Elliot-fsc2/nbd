@@ -6,10 +6,10 @@ use App\Enums\HouseOfHeroes;
 use App\Mail\DonorFormMail;
 use App\Models\Course;
 use App\Models\Donor;
-use App\Models\Hospital;
 use App\Services\HospitalAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -25,8 +25,7 @@ class PublicController extends Controller
     public function form(): Response
     {
         return Inertia::render('welcome', [
-            'hospitals' => Hospital::all(),
-            'courses' => Course::with('department:id,name')->orderBy('name')->get(),
+            'courses' => Cache::remember('courses', 3600, fn () => Course::with('department:id,name')->orderBy('name')->get()),
             'houseOfHeroes' => collect(HouseOfHeroes::cases())->map(fn ($case) => [
                 'value' => $case->value,
                 'label' => $case->name,
