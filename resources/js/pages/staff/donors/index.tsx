@@ -28,6 +28,8 @@ interface Donor {
     checked_in_time: string | null;
     called_time: string | null;
     completed_time: string | null;
+    course_name: string | null;
+    house_heroes_label: string | null;
     data: Record<string, string> | null;
 }
 
@@ -78,7 +80,8 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
         ['Occupation', d.occupation],
         ['Civil Status', d.civil_status ? d.civil_status.charAt(0).toUpperCase() + d.civil_status.slice(1) : undefined],
         ['Student/Employee ID', donor.id_number ?? d.id_number],
-        ['Course ID', d.course_id],
+        ['House of Heroes', donor.house_heroes_label],
+        ['Course', donor.course_name ?? d.course_id],
         ['Year & Section', d.year_section],
         ['Representative For', d.representative_full_name],
         ['House No', d.house_no],

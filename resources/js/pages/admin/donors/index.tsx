@@ -22,6 +22,8 @@ interface Donor {
     contact_number: string | null;
     status: string | null;
     hospital_name: string | null;
+    course_name: string | null;
+    house_heroes_label: string | null;
     data: Record<string, string> | null;
 }
 
@@ -75,8 +77,8 @@ function DonorDetailDialog({ donor, open, onOpenChange }: { donor: Donor | null;
         ['Occupation', d.occupation],
         ['Assigned Hospital', donor.hospital_name],
         ['Student/Employee ID', donor.id_number ?? d.id_number],
-        ['House of Heroes', d.house_heroes ? d.house_heroes.charAt(0).toUpperCase() + d.house_heroes.slice(1) : undefined],
-        ['Course ID', d.course_id],
+        ['House of Heroes', donor.house_heroes_label],
+        ['Course', donor.course_name ?? d.course_id],
         ['Year & Section', d.year_section],
         ['Representative For', d.representative_full_name],
         ['House No', d.house_no],

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Donor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +15,8 @@ class DonorController extends Controller
 {
     public function index(Request $request): Response
     {
+        $courses = Course::pluck('name', 'id');
+
         $query = Donor::with('assignedHospital', 'latestRegistration');
 
         if ($search = $request->input('search')) {
@@ -24,8 +28,17 @@ class DonorController extends Controller
             });
         }
 
+        $mapHouseOfHeroes = function (?string $value): ?string {
+            return match ($value) {
+                null => null,
+                'member' => 'Member',
+                'non_member' => 'Non-member',
+                default => HouseOfHeroes::tryFrom($value)?->label() ?? $value,
+            };
+        };
+
         return Inertia::render('staff/donors/index', [
-            'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) {
+            'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) use ($courses, $mapHouseOfHeroes) {
                 $registration = $donor->latestRegistration;
 
                 return [
@@ -42,6 +55,8 @@ class DonorController extends Controller
                     'checked_in_time' => $registration?->checked_in_at?->isoFormat('h:mm A'),
                     'called_time' => $registration?->called_at?->isoFormat('h:mm A'),
                     'completed_time' => $registration?->completed_at?->isoFormat('h:mm A'),
+                    'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
+                    'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
                     'data' => $donor->data,
                 ];
             }),

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use App\Models\Donor;
 use App\Services\PdfGenerationService;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ class DonorController extends Controller
 {
     public function index(Request $request): Response
     {
+        $courses = Course::pluck('name', 'id');
+
         $query = Donor::with('assignedHospital');
 
         if ($search = $request->get('search')) {
@@ -33,8 +37,17 @@ class DonorController extends Controller
             $query->where('assigned_hospital_id', $hospitalId);
         }
 
+        $mapHouseOfHeroes = function (?string $value): ?string {
+            return match ($value) {
+                null => null,
+                'member' => 'Member',
+                'non_member' => 'Non-member',
+                default => HouseOfHeroes::tryFrom($value)?->label() ?? $value,
+            };
+        };
+
         return Inertia::render('admin/donors/index', [
-            'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) {
+            'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) use ($courses, $mapHouseOfHeroes) {
                 return [
                     'id' => $donor->id,
                     'tracking_code' => $donor->tracking_code,
@@ -45,6 +58,8 @@ class DonorController extends Controller
                     'contact_number' => $donor->contact_number,
                     'status' => $donor->status?->value,
                     'hospital_name' => $donor->assignedHospital?->name,
+                    'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
+                    'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
                     'data' => $donor->data,
                 ];
             }),
