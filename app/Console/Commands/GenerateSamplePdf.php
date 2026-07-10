@@ -21,12 +21,13 @@ class GenerateSamplePdf extends Command
                 ->orWhere('code', $hospitalOption)
                 ->firstOrFail();
         } else {
-            $hospital = $this->choice(
+            $choices = Hospital::all()->keyBy(fn ($h) => (string) $h->id)->map(fn ($h) => "{$h->name} ({$h->code})")->toArray();
+
+            $hospitalId = (int) $this->choice(
                 'Which hospital form should the sample use?',
-                Hospital::all()->map(fn ($h) => "{$h->id}: {$h->name} ({$h->code})")->toArray(),
+                $choices,
             );
 
-            $hospitalId = (int) explode(':', $hospital)[0];
             $hospital = Hospital::findOrFail($hospitalId);
         }
 
