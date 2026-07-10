@@ -25,7 +25,7 @@ class PublicController extends Controller
     public function form(): Response
     {
         return Inertia::render('welcome', [
-            'courses' => Cache::remember('courses', 3600, fn () => Course::with('department:id,name')->orderBy('name')->get()),
+            'courses' => Cache::remember('courses', 3600, fn () => Course::with('department:id,name')->orderBy('name')->get()->toArray()),
             'houseOfHeroes' => collect(HouseOfHeroes::cases())->map(fn ($case) => [
                 'value' => $case->value,
                 'label' => $case->name,
