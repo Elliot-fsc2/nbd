@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\DonorOutcomeStatus;
 use App\Enums\DonorStatus;
 use App\Enums\DonorType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Donor extends Model
 {
@@ -20,6 +22,8 @@ class Donor extends Model
         'assigned_hospital_id',
         'data',
         'status',
+        'outcome_status',
+        'staff_remarks',
     ];
 
     protected function casts(): array
@@ -27,6 +31,7 @@ class Donor extends Model
         return [
             'donor_type' => DonorType::class,
             'status' => DonorStatus::class,
+            'outcome_status' => DonorOutcomeStatus::class,
             'data' => 'array',
         ];
     }
@@ -41,5 +46,11 @@ class Donor extends Model
     public function eventRegistrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    /** @return HasOne<EventRegistration, $this> */
+    public function latestRegistration(): HasOne
+    {
+        return $this->hasOne(EventRegistration::class)->latest('created_at');
     }
 }

@@ -51,6 +51,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
     function handleCheckIn(e: React.FormEvent) {
         e.preventDefault();
         post(staff.events.checkin(event.id)?.url || `/staff/events/${event.id}/checkin`, {
+            preserveScroll: true,
             onSuccess: () => reset(),
         });
     }
@@ -123,8 +124,8 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                     ID: {reg.donor.id_number ?? 'N/A'}
                                                 </p>
                                                 <div className="mt-4 flex gap-3">
-                                                    <Button onClick={() => router.post(staff.queue.complete(reg.id)?.url || `/staff/queue/${reg.id}/complete`)} variant="default">Complete</Button>
-                                                    <Button onClick={() => router.post(staff.queue.skip(reg.id)?.url || `/staff/queue/${reg.id}/skip`)} variant="secondary">Skip</Button>
+                                                    <Button onClick={() => router.post(staff.queue.complete(reg.id)?.url || `/staff/queue/${reg.id}/complete`, {}, { preserveScroll: true })} variant="default">Complete</Button>
+                                                    <Button onClick={() => router.post(staff.queue.skip(reg.id)?.url || `/staff/queue/${reg.id}/skip`, {}, { preserveScroll: true })} variant="secondary">Skip</Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -162,7 +163,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                         <Badge variant="secondary">Waiting</Badge>
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                            <Button onClick={() => router.post(staff.queue.next(reg.id)?.url || `/staff/queue/${reg.id}/next`)} size="sm">Call</Button>
+                                                            <Button onClick={() => router.post(staff.queue.next(reg.id)?.url || `/staff/queue/${reg.id}/next`, {}, { preserveScroll: true })} size="sm">Call</Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

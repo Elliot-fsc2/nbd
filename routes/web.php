@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\HospitalController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\Staff\DonorController as StaffDonorController;
 use App\Http\Controllers\Staff\QueueController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,4 +47,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::post('/queue/{registration}/next', [QueueController::class, 'next'])->name('queue.next');
     Route::post('/queue/{registration}/complete', [QueueController::class, 'complete'])->name('queue.complete');
     Route::post('/queue/{registration}/skip', [QueueController::class, 'skip'])->name('queue.skip');
+
+    Route::get('/donors', [StaffDonorController::class, 'index'])->name('donors.index');
+    Route::put('/donors/{donor}', [StaffDonorController::class, 'update'])->name('donors.update');
 });

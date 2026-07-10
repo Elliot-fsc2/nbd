@@ -93,6 +93,11 @@ toast.error(flash.error);
                                     Events
                                 </Link>
                             </li>
+                            <li>
+                                <Link href={staff.donors.index().url} className="flex rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+                                    Donors
+                                </Link>
+                            </li>
                         </ul>
                     )}
                 </nav>
@@ -102,16 +107,11 @@ toast.error(flash.error);
                         <p className="font-medium text-foreground">{user?.name}</p>
                         <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
-                    <Link
-                        href={logout().url}
-                        method="post"
-                        as="button"
-                        className="w-full"
-                    >
-                        <Button variant="destructive" className="w-full">
+                    <Button variant="destructive" className="w-full" asChild>
+                        <Link href={logout().url} method="post">
                             Logout
-                        </Button>
-                    </Link>
+                        </Link>
+                    </Button>
                 </div>
             </aside>
 
@@ -157,6 +157,15 @@ toast.error(flash.error);
                                             Events
                                         </Link>
                                     </li>
+                                    <li>
+                                        <Link
+                                            href={staff.donors.index().url}
+                                            className="flex rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                            onClick={() => setSidebarOpen(false)}
+                                        >
+                                            Donors
+                                        </Link>
+                                    </li>
                                 </ul>
                             )}
                         </nav>
@@ -166,16 +175,11 @@ toast.error(flash.error);
                                 <p className="font-medium text-foreground">{user?.name}</p>
                                 <p className="text-xs text-muted-foreground">{user?.email}</p>
                             </div>
-                            <Link
-                                href={logout().url}
-                                method="post"
-                                as="button"
-                                className="w-full"
-                            >
-                                <Button variant="destructive" className="w-full">
+                            <Button variant="destructive" className="w-full" asChild>
+                                <Link href={logout().url} method="post">
                                     Logout
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         </div>
                     </div>
                 </SheetContent>
