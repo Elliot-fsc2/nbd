@@ -30,7 +30,7 @@ class GenerateSamplePdf extends Command
             $hospital = Hospital::findOrFail($hospitalId);
         }
 
-        $donor = Donor::create([
+        $donor = Donor::make([
             'tracking_code' => 'SAMPLE-'.strtoupper(bin2hex(random_bytes(3))),
             'donor_type' => 'student',
             'status' => 'registered',
