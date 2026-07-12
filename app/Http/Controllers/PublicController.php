@@ -37,8 +37,16 @@ class PublicController extends Controller
     {
         $validated = $request->validate([
             'donor_type' => ['nullable', 'string', 'in:student,employee,representative'],
-            'id_number' => ['nullable', 'string', Rule::unique('donors', 'id_number')],
-            'representative_full_name' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']*$/u'],
+            'id_number' => [
+                Rule::when($request->input('donor_type') === 'representative', ['required'], ['nullable']),
+                'string',
+                Rule::unique('donors', 'id_number'),
+            ],
+            'representative_full_name' => [
+                Rule::when($request->input('donor_type') === 'representative', ['required'], ['nullable']),
+                'string',
+                'regex:/^[\pL\s.\-\']*$/u',
+            ],
 
             'surname' => ['required', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
             'given_name' => ['required', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
@@ -56,7 +64,32 @@ class PublicController extends Controller
             'barangay' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
             'city_province' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
 
-            'email' => ['required', 'email', app()->isProduction() ? Rule::unique('donors', 'email') : ''],
+            'email' => ['required', 'email', function (string $attribute, mixed $value, \Closure $fail) {
+                $domain = mb_substr(mb_strstr($value, '@'), 1);
+
+                $typos = [
+                    '.con' => '.com',
+                    '.cmo' => '.com',
+                    '.ocm' => '.com',
+                    '.coom' => '.com',
+                    '.vom' => '.com',
+                    '.xom' => '.com',
+                    '.ne' => '.net',
+                    '.og' => '.org',
+                    '.orgg' => '.org',
+                    '.gmail' => 'gmail.com',
+                    '.yahoo' => 'yahoo.com',
+                ];
+
+                foreach ($typos as $typo => $correct) {
+                    if (str_ends_with($domain, $typo)) {
+                        $corrected = str_replace($typo, $correct, $value);
+                        $fail("Did you mean {$corrected}? Please check your email address.");
+
+                        return;
+                    }
+                }
+            }, app()->isProduction() ? Rule::unique('donors', 'email') : ''],
             'contact_number' => ['nullable', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'course_id' => ['nullable', 'string'],
             'year_section' => ['nullable', 'string'],

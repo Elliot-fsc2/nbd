@@ -84,8 +84,8 @@ const initialData: FormData = {
 
 function computeAge(birthdate: string): string {
     if (!birthdate) {
-return '';
-}
+        return '';
+    }
 
     const bd = new Date(birthdate);
     const today = new Date();
@@ -93,8 +93,8 @@ return '';
     const m = today.getMonth() - bd.getMonth();
 
     if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) {
-age--;
-}
+        age--;
+    }
 
     return String(age);
 }
@@ -104,7 +104,8 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
     const [isRepresentative, setIsRepresentative] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
-    const { data, setData, post, errors, processing } = useForm<FormData>(initialData);
+    const { data, setData, post, errors, processing } =
+        useForm<FormData>(initialData);
 
     function updateBirthdate(value: string) {
         setData({
@@ -120,8 +121,8 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
         setData(field, value);
         setZodErrors((prev) => {
             if (!prev[field]) {
-return prev;
-}
+                return prev;
+            }
 
             const next = { ...prev };
             delete next[field];
@@ -133,34 +134,114 @@ return prev;
     const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿŃñ\s.\-']+$/;
     const textRegex = /^[A-Za-zÀ-ÖØ-öø-ÿŃñ0-9\s.,\-']+$/;
 
-    const step1Schema = z.object({
-        surname: z.string().min(1, 'Surname is required').regex(nameRegex, 'Surname should only contain letters'),
-        given_name: z.string().min(1, 'Given name is required').regex(nameRegex, 'Given name should only contain letters'),
-        birthdate: z.string().min(1, 'Date of birth is required'),
-        sex: z.string().min(1, 'Sex is required'),
-        civil_status: z.string().min(1, 'Civil status is required'),
-        blood_type: z.string().min(1, 'Blood type is required'),
-        occupation: z.string().min(1, 'Occupation is required').regex(textRegex, 'Occupation contains invalid characters'),
-        barangay: z.string().min(1, 'Barangay is required').regex(nameRegex, 'Barangay should only contain letters'),
-        city_province: z.string().min(1, 'City/province is required').regex(nameRegex, 'City/province should only contain letters'),
-        email: z.string().min(1, 'Email is required').email('Invalid email format'),
-        contact_number: z.string().min(1, 'Contact number is required').regex(/^(09|\+639)\d{9}$/, 'Enter a valid PH mobile number (e.g. 09XX XXX XXXX)'),
-        house_heroes: z.string().optional(),
-        course_id: z.string().optional(),
-        representative_full_name: z.string().optional().refine(
-            (val) => !val || nameRegex.test(val),
-            'Full name should only contain letters',
-        ),
-        id_number: z.string().optional(),
-        year_section: z.string().optional(),
-    }).superRefine((val, ctx) => {
-        if (!isRepresentative && !val.id_number) {
-            ctx.addIssue({ code: 'custom', path: ['id_number'], message: 'Student/Employee ID is required' });
-        }
-        if (!isRepresentative && !val.house_heroes) {
-            ctx.addIssue({ code: 'custom', path: ['house_heroes'], message: 'House of Heroes is required' });
-        }
-    });
+    const step1Schema = z
+        .object({
+            surname: z
+                .string()
+                .min(1, 'Surname is required')
+                .regex(nameRegex, 'Surname should only contain letters'),
+            given_name: z
+                .string()
+                .min(1, 'Given name is required')
+                .regex(nameRegex, 'Given name should only contain letters'),
+            birthdate: z.string().min(1, 'Date of birth is required'),
+            sex: z.string().min(1, 'Sex is required'),
+            civil_status: z.string().min(1, 'Civil status is required'),
+            blood_type: z.string().min(1, 'Blood type is required'),
+            occupation: z
+                .string()
+                .min(1, 'Occupation is required')
+                .regex(textRegex, 'Occupation contains invalid characters'),
+            barangay: z
+                .string()
+                .min(1, 'Barangay is required')
+                .regex(nameRegex, 'Barangay should only contain letters'),
+            city_province: z
+                .string()
+                .min(1, 'City/province is required')
+                .regex(nameRegex, 'City/province should only contain letters'),
+            email: z
+                .string()
+                .min(1, 'Email is required')
+                .email('Invalid email format'),
+            contact_number: z
+                .string()
+                .min(1, 'Contact number is required')
+                .regex(
+                    /^(09|\+639)\d{9}$/,
+                    'Enter a valid PH mobile number (e.g. 09XX XXX XXXX)',
+                ),
+            house_heroes: z.string().optional(),
+            course_id: z.string().optional(),
+            representative_full_name: z
+                .string()
+                .optional()
+                .refine(
+                    (val) => !val || nameRegex.test(val),
+                    'Full name should only contain letters',
+                ),
+            id_number: z.string().optional(),
+            year_section: z.string().optional(),
+        })
+        .superRefine((val, ctx) => {
+            if (isRepresentative) {
+                if (!val.id_number) {
+                    ctx.addIssue({
+                        code: 'custom',
+                        path: ['id_number'],
+                        message: 'Representative ID is required',
+                    });
+                }
+                if (!val.representative_full_name) {
+                    ctx.addIssue({
+                        code: 'custom',
+                        path: ['representative_full_name'],
+                        message: 'Representative full name is required',
+                    });
+                }
+            }
+            if (!isRepresentative && !val.id_number) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['id_number'],
+                    message: 'Student/Employee ID is required',
+                });
+            }
+            if (!isRepresentative && !val.house_heroes) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['house_heroes'],
+                    message: 'House of Heroes is required',
+                });
+            }
+
+            const emailTypos: Record<string, string> = {
+                '.con': '.com',
+                '.cmo': '.com',
+                '.ocm': '.com',
+                '.coom': '.com',
+                '.vom': '.com',
+                '.xom': '.com',
+                '.ne': '.net',
+                '.og': '.org',
+                '.orgg': '.org',
+            };
+            const atIndex = val.email.lastIndexOf('@');
+            if (atIndex !== -1) {
+                const domain = val.email.slice(atIndex);
+                for (const [typo, correct] of Object.entries(emailTypos)) {
+                    if (domain.endsWith(typo)) {
+                        const corrected = val.email.replace(typo, correct);
+                        ctx.addIssue({
+                            code: 'custom',
+                            path: ['email'],
+                            message: `Did you mean ${corrected}? Please check your email address.`,
+                        });
+                        return;
+                    }
+                }
+            }
+        });
 
     function handleNext() {
         const fields: Record<string, string> = {
@@ -226,14 +307,29 @@ return prev;
             <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 to-white p-4">
                 <div className="w-full max-w-lg text-center">
                     <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-green-100">
-                        <svg className="size-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                            className="size-8 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                            />
                         </svg>
                     </div>
-                    <h2 className="mb-2 text-xl font-bold text-gray-800">Form Submitted Successfully!</h2>
-                    <p className="mb-1 text-sm text-gray-600">Thank you for registering as a blood donor.</p>
+                    <h2 className="mb-2 text-xl font-bold text-gray-800">
+                        Form Submitted Successfully!
+                    </h2>
+                    <p className="mb-1 text-sm text-gray-600">
+                        Thank you for registering as a blood donor.
+                    </p>
                     <p className="mb-6 text-sm text-gray-600">
-                        Please <strong>check your email</strong> &mdash; your completed donor form has been sent to your inbox.
+                        Please <strong>check your email</strong> &mdash; your
+                        completed donor form has been sent to your inbox.
                     </p>
                     <Button onClick={() => window.location.reload()}>
                         Submit Another Response
@@ -247,43 +343,67 @@ return prev;
         <div className="min-h-screen bg-gradient-to-br from-red-50 to-white py-8">
             <div className="mx-auto max-w-2xl px-4">
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-gray-800">Blood Donation Registration</h1>
-                    <p className="mt-1 text-sm text-gray-500">Fill out the form below to register as a blood donor.</p>
+                    <h1 className="text-3xl font-bold text-gray-800">
+                        Blood Donation Registration
+                    </h1>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Fill out the form below to register as a blood donor.
+                    </p>
                 </div>
 
                 {/* Step Tracker */}
-                <div className="relative mb-8 mx-auto max-w-sm">
-                    <div className="absolute top-5 left-0 right-0 h-0.5 bg-red-100 z-0 mx-6" />
+                <div className="relative mx-auto mb-8 max-w-sm">
+                    <div className="absolute top-5 right-0 left-0 z-0 mx-6 h-0.5 bg-red-100" />
                     <div
-                        className="absolute top-5 left-0 h-0.5 bg-red-500 z-0 mx-6 transition-all duration-500"
-                        style={{ width: `calc(${(step - 1)} * (100% - 3rem))` }}
+                        className="absolute top-5 left-0 z-0 mx-6 h-0.5 bg-red-500 transition-all duration-500"
+                        style={{ width: `calc(${step - 1} * (100% - 3rem))` }}
                     />
-                    <div className="flex items-center justify-between relative">
-                        {[{ label: 'Personal', icon: '👤' }, { label: 'Confirm', icon: '✓' }].map((s, i) => {
+                    <div className="relative flex items-center justify-between">
+                        {[
+                            { label: 'Personal', icon: '👤' },
+                            { label: 'Confirm', icon: '✓' },
+                        ].map((s, i) => {
                             const n = i + 1;
 
                             return (
-                                <div key={n} className="flex flex-col items-center z-10 gap-1.5 px-2">
+                                <div
+                                    key={n}
+                                    className="z-10 flex flex-col items-center gap-1.5 px-2"
+                                >
                                     <div
-                                        className={`flex items-center justify-center size-10 rounded-full text-sm font-bold border-2 transition-all duration-300 ${
+                                        className={`flex size-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 ${
                                             step === n
-                                                ? 'bg-red-600 border-red-600 text-white shadow-md shadow-red-200'
+                                                ? 'border-red-600 bg-red-600 text-white shadow-md shadow-red-200'
                                                 : step > n
-                                                  ? 'bg-red-500 border-red-500 text-white'
-                                                  : 'bg-white border-red-200 text-red-300'
+                                                  ? 'border-red-500 bg-red-500 text-white'
+                                                  : 'border-red-200 bg-white text-red-300'
                                         }`}
                                     >
                                         {step > n ? (
-                                            <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            <svg
+                                                className="size-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={3}
+                                                    d="M5 13l4 4L19 7"
+                                                />
                                             </svg>
                                         ) : (
                                             s.icon
                                         )}
                                     </div>
-                                    <span className={`text-[0.65rem] font-medium hidden sm:block transition-colors duration-300 ${
-                                        step >= n ? 'text-red-600' : 'text-gray-400'
-                                    }`}>
+                                    <span
+                                        className={`hidden text-[0.65rem] font-medium transition-colors duration-300 sm:block ${
+                                            step >= n
+                                                ? 'text-red-600'
+                                                : 'text-gray-400'
+                                        }`}
+                                    >
                                         {s.label}
                                     </span>
                                 </div>
@@ -296,21 +416,37 @@ return prev;
                     {/* Step 1: Personal Data */}
                     {step === 1 && (
                         <div className="p-6">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-red-100">
-                                <div className="flex size-9 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0">
-                                    <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <div className="mb-6 flex items-center gap-3 border-b border-red-100 pb-4">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+                                    <svg
+                                        className="size-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-base">Personal Data</h3>
-                                    <p className="text-xs text-gray-500">Fields marked <span className="text-red-500">*</span> are required.</p>
+                                    <h3 className="text-base font-semibold">
+                                        Personal Data
+                                    </h3>
+                                    <p className="text-xs text-gray-500">
+                                        Fields marked{' '}
+                                        <span className="text-red-500">*</span>{' '}
+                                        are required.
+                                    </p>
                                 </div>
                             </div>
 
                             {/* Representative Toggle */}
                             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50/40 p-4">
-                                <label className="flex items-start gap-3 cursor-pointer">
+                                <label className="flex cursor-pointer items-start gap-3">
                                     <input
                                         type="checkbox"
                                         checked={isRepresentative}
@@ -319,7 +455,9 @@ return prev;
                                             setIsRepresentative(checked);
                                             setData({
                                                 ...data,
-                                                donor_type: checked ? 'representative' : '',
+                                                donor_type: checked
+                                                    ? 'representative'
+                                                    : '',
                                                 id_number: '',
                                                 representative_full_name: '',
                                                 house_heroes: '',
@@ -329,24 +467,72 @@ return prev;
                                         }}
                                         className="mt-1 size-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
                                     />
-                                    <span className="text-sm font-medium text-gray-700">I am donating as a Representative</span>
+                                    <span className="text-sm font-medium text-gray-700">
+                                        I am donating as a Representative
+                                    </span>
                                 </label>
                             </div>
 
                             {/* Representative Fields */}
                             {isRepresentative && (
-                                <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-4">
-                                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Representative For:</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/40 p-4">
+                                    <p className="text-xs font-semibold tracking-wider text-amber-700 uppercase">
+                                        Representative For:
+                                    </p>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="id_number">Student/Employee ID</Label>
-                                            <Input id="id_number" value={data.id_number} onChange={(e) => setData('id_number', e.target.value)} placeholder="e.g. 2024-00123" />
-                                            {(zodErrors.id_number || errors.id_number) && <p className="text-xs text-destructive">{zodErrors.id_number || errors.id_number}</p>}
+                                            <Label htmlFor="id_number">
+                                                Student/Employee ID
+                                                <span className="ml-0.5 text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="id_number"
+                                                value={data.id_number}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'id_number',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. 2024-00123"
+                                            />
+                                            {(zodErrors.id_number ||
+                                                errors.id_number) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.id_number ||
+                                                        errors.id_number}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="representative_full_name">Full Name</Label>
-                                            <Input id="representative_full_name" value={data.representative_full_name} onChange={(e) => setData('representative_full_name', e.target.value)} placeholder="e.g. Juan Dela Cruz" />
-                                            {(zodErrors.representative_full_name || errors.representative_full_name) && <p className="text-xs text-destructive">{zodErrors.representative_full_name || errors.representative_full_name}</p>}
+                                            <Label htmlFor="representative_full_name">
+                                                Full Name
+                                                <span className="ml-0.5 text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="representative_full_name"
+                                                value={
+                                                    data.representative_full_name
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'representative_full_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. Juan Dela Cruz"
+                                            />
+                                            {(zodErrors.representative_full_name ||
+                                                errors.representative_full_name) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.representative_full_name ||
+                                                        errors.representative_full_name}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -354,87 +540,282 @@ return prev;
 
                             <div className="space-y-5">
                                 {/* Name */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div className="space-y-2">
-                                        <Label htmlFor="surname">Surname <span className="text-red-500">*</span></Label>
-                                        <Input id="surname" value={data.surname} onChange={(e) => setData('surname', e.target.value)} placeholder="e.g. Dela Cruz" />
-                                        {(zodErrors.surname || errors.surname) && <p className="text-xs text-destructive">{zodErrors.surname || errors.surname}</p>}
+                                        <Label htmlFor="surname">
+                                            Surname{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="surname"
+                                            value={data.surname}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'surname',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. Dela Cruz"
+                                        />
+                                        {(zodErrors.surname ||
+                                            errors.surname) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.surname ||
+                                                    errors.surname}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="given_name">Given Name <span className="text-red-500">*</span></Label>
-                                        <Input id="given_name" value={data.given_name} onChange={(e) => setData('given_name', e.target.value)} placeholder="e.g. Juan" />
-                                        {(zodErrors.given_name || errors.given_name) && <p className="text-xs text-destructive">{zodErrors.given_name || errors.given_name}</p>}
+                                        <Label htmlFor="given_name">
+                                            Given Name{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="given_name"
+                                            value={data.given_name}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'given_name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. Juan"
+                                        />
+                                        {(zodErrors.given_name ||
+                                            errors.given_name) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.given_name ||
+                                                    errors.given_name}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="middle_name">Middle Name</Label>
-                                        <Input id="middle_name" value={data.middle_name} onChange={(e) => setData('middle_name', e.target.value)} placeholder="e.g. Santos" />
+                                        <Label htmlFor="middle_name">
+                                            Middle Name
+                                        </Label>
+                                        <Input
+                                            id="middle_name"
+                                            value={data.middle_name}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'middle_name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. Santos"
+                                        />
                                     </div>
                                 </div>
 
                                 {/* Personal Details */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="birthdate">Date of Birth <span className="text-red-500">*</span></Label>
-                                        <Input id="birthdate" type="date" value={data.birthdate} onChange={(e) => updateBirthdate(e.target.value)} />
-                                        {(zodErrors.birthdate || errors.birthdate) && <p className="text-xs text-destructive">{zodErrors.birthdate || errors.birthdate}</p>}
+                                        <Label htmlFor="birthdate">
+                                            Date of Birth{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="birthdate"
+                                            type="date"
+                                            value={data.birthdate}
+                                            onChange={(e) =>
+                                                updateBirthdate(e.target.value)
+                                            }
+                                        />
+                                        {(zodErrors.birthdate ||
+                                            errors.birthdate) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.birthdate ||
+                                                    errors.birthdate}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="sex">Sex <span className="text-red-500">*</span></Label>
-                                        <Select value={data.sex} onValueChange={(v) => setData('sex', v)}>
-                                            <SelectTrigger id="sex"><SelectValue placeholder="Select..." /></SelectTrigger>
+                                        <Label htmlFor="sex">
+                                            Sex{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Select
+                                            value={data.sex}
+                                            onValueChange={(v) =>
+                                                setData('sex', v)
+                                            }
+                                        >
+                                            <SelectTrigger id="sex">
+                                                <SelectValue placeholder="Select..." />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="male">Male</SelectItem>
-                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="male">
+                                                    Male
+                                                </SelectItem>
+                                                <SelectItem value="female">
+                                                    Female
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        {(zodErrors.sex || errors.sex) && <p className="text-xs text-destructive">{zodErrors.sex || errors.sex}</p>}
+                                        {(zodErrors.sex || errors.sex) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.sex || errors.sex}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="civil_status">Civil Status <span className="text-red-500">*</span></Label>
-                                        <Select value={data.civil_status} onValueChange={(v) => setData('civil_status', v)}>
-                                            <SelectTrigger id="civil_status"><SelectValue placeholder="Select..." /></SelectTrigger>
+                                        <Label htmlFor="civil_status">
+                                            Civil Status{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Select
+                                            value={data.civil_status}
+                                            onValueChange={(v) =>
+                                                setData('civil_status', v)
+                                            }
+                                        >
+                                            <SelectTrigger id="civil_status">
+                                                <SelectValue placeholder="Select..." />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="single">Single</SelectItem>
-                                                <SelectItem value="married">Married</SelectItem>
-                                                <SelectItem value="divorced">Separated</SelectItem>
-                                                <SelectItem value="widowed">Widowed</SelectItem>
+                                                <SelectItem value="single">
+                                                    Single
+                                                </SelectItem>
+                                                <SelectItem value="married">
+                                                    Married
+                                                </SelectItem>
+                                                <SelectItem value="divorced">
+                                                    Separated
+                                                </SelectItem>
+                                                <SelectItem value="widowed">
+                                                    Widowed
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        {(zodErrors.civil_status || errors.civil_status) && <p className="text-xs text-destructive">{zodErrors.civil_status || errors.civil_status}</p>}
+                                        {(zodErrors.civil_status ||
+                                            errors.civil_status) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.civil_status ||
+                                                    errors.civil_status}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="blood_type">Blood Type <span className="text-red-500">*</span></Label>
-                                        <Select value={data.blood_type} onValueChange={(v) => setData('blood_type', v)}>
-                                            <SelectTrigger id="blood_type"><SelectValue placeholder="Select..." /></SelectTrigger>
+                                        <Label htmlFor="blood_type">
+                                            Blood Type{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Select
+                                            value={data.blood_type}
+                                            onValueChange={(v) =>
+                                                setData('blood_type', v)
+                                            }
+                                        >
+                                            <SelectTrigger id="blood_type">
+                                                <SelectValue placeholder="Select..." />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'].map((bt) => (
-                                                    <SelectItem key={bt} value={bt}>{bt}</SelectItem>
+                                                {[
+                                                    'A+',
+                                                    'A-',
+                                                    'B+',
+                                                    'B-',
+                                                    'AB+',
+                                                    'AB-',
+                                                    'O+',
+                                                    'O-',
+                                                    'Unknown',
+                                                ].map((bt) => (
+                                                    <SelectItem
+                                                        key={bt}
+                                                        value={bt}
+                                                    >
+                                                        {bt}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        {(zodErrors.blood_type || errors.blood_type) && <p className="text-xs text-destructive">{zodErrors.blood_type || errors.blood_type}</p>}
+                                        {(zodErrors.blood_type ||
+                                            errors.blood_type) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.blood_type ||
+                                                    errors.blood_type}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
                                 {/* Occupation & House of Heroes */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label htmlFor="occupation">Occupation <span className="text-red-500">*</span></Label>
-                                        <Input id="occupation" value={data.occupation} onChange={(e) => setData('occupation', e.target.value)} placeholder="e.g. Student, Engineer..." />
-                                        {(zodErrors.occupation || errors.occupation) && <p className="text-xs text-destructive">{zodErrors.occupation || errors.occupation}</p>}
+                                        <Label htmlFor="occupation">
+                                            Occupation{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="occupation"
+                                            value={data.occupation}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'occupation',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. Student, Engineer..."
+                                        />
+                                        {(zodErrors.occupation ||
+                                            errors.occupation) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.occupation ||
+                                                    errors.occupation}
+                                            </p>
+                                        )}
                                     </div>
                                     {!isRepresentative && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="house_heroes">House of Heroes <span className="text-red-500">*</span></Label>
-                                            <Select value={data.house_heroes} onValueChange={(v) => setData('house_heroes', v)}>
-                                                <SelectTrigger id="house_heroes"><SelectValue placeholder="Select..." /></SelectTrigger>
+                                            <Label htmlFor="house_heroes">
+                                                House of Heroes{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Select
+                                                value={data.house_heroes}
+                                                onValueChange={(v) =>
+                                                    setData('house_heroes', v)
+                                                }
+                                            >
+                                                <SelectTrigger id="house_heroes">
+                                                    <SelectValue placeholder="Select..." />
+                                                </SelectTrigger>
                                                 <SelectContent>
                                                     {houseOfHeroes.map((h) => (
-                                                        <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                                                        <SelectItem
+                                                            key={h.value}
+                                                            value={h.value}
+                                                        >
+                                                            {h.label}
+                                                        </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            {(zodErrors.house_heroes || errors.house_heroes) && <p className="text-xs text-destructive">{zodErrors.house_heroes || errors.house_heroes}</p>}
+                                            {(zodErrors.house_heroes ||
+                                                errors.house_heroes) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.house_heroes ||
+                                                        errors.house_heroes}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -442,77 +823,242 @@ return prev;
                                 {/* Student/Employee ID (for non-representatives) */}
                                 {!isRepresentative && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="id_number">Student/Employee ID <span className="text-red-500">*</span></Label>
-                                        <Input id="id_number" value={data.id_number} onChange={(e) => setData('id_number', e.target.value)} placeholder="e.g. 2024-00123" />
-                                        {(zodErrors.id_number || errors.id_number) && <p className="text-xs text-destructive">{zodErrors.id_number || errors.id_number}</p>}
+                                        <Label htmlFor="id_number">
+                                            Student/Employee ID{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="id_number"
+                                            value={data.id_number}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'id_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. 2024-00123"
+                                        />
+                                        {(zodErrors.id_number ||
+                                            errors.id_number) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.id_number ||
+                                                    errors.id_number}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Course */}
                                 {!isRepresentative && (
                                     <div className="space-y-2">
-                                        <Label htmlFor="course_id">Course <span className="text-red-500">*</span></Label>
-                                        <Select value={data.course_id} onValueChange={(v) => setData('course_id', v)}>
-                                            <SelectTrigger id="course_id"><SelectValue placeholder="Select course..." /></SelectTrigger>
+                                        <Label htmlFor="course_id">
+                                            Course{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Select
+                                            value={data.course_id}
+                                            onValueChange={(v) =>
+                                                setData('course_id', v)
+                                            }
+                                        >
+                                            <SelectTrigger id="course_id">
+                                                <SelectValue placeholder="Select course..." />
+                                            </SelectTrigger>
                                             <SelectContent>
                                                 {courses.map((c) => (
-                                                    <SelectItem key={c.id} value={String(c.id)}>
-                                                        {c.name} ({c.department?.name ?? 'No Department'})
+                                                    <SelectItem
+                                                        key={c.id}
+                                                        value={String(c.id)}
+                                                    >
+                                                        {c.name} (
+                                                        {c.department?.name ??
+                                                            'No Department'}
+                                                        )
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        {(zodErrors.course_id || errors.course_id) && <p className="text-xs text-destructive">{zodErrors.course_id || errors.course_id}</p>}
+                                        {(zodErrors.course_id ||
+                                            errors.course_id) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.course_id ||
+                                                    errors.course_id}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Address */}
                                 <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Address</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <p className="mb-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                                        Address
+                                    </p>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="house_no">House No / Street</Label>
-                                            <Input id="house_no" value={data.house_no} onChange={(e) => setData('house_no', e.target.value)} placeholder="123 Rizal St." />
+                                            <Label htmlFor="house_no">
+                                                House No / Street
+                                            </Label>
+                                            <Input
+                                                id="house_no"
+                                                value={data.house_no}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'house_no',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="123 Rizal St."
+                                            />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="street">Street / Subdivision</Label>
-                                            <Input id="street" value={data.street} onChange={(e) => setData('street', e.target.value)} placeholder="Subdivision / Village" />
+                                            <Label htmlFor="street">
+                                                Street / Subdivision
+                                            </Label>
+                                            <Input
+                                                id="street"
+                                                value={data.street}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'street',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="Subdivision / Village"
+                                            />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="barangay">Barangay <span className="text-red-500">*</span></Label>
-                                            <Input id="barangay" value={data.barangay} onChange={(e) => setData('barangay', e.target.value)} />
-                                            {(zodErrors.barangay || errors.barangay) && <p className="text-xs text-destructive">{zodErrors.barangay || errors.barangay}</p>}
+                                            <Label htmlFor="barangay">
+                                                Barangay{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="barangay"
+                                                value={data.barangay}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'barangay',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            {(zodErrors.barangay ||
+                                                errors.barangay) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.barangay ||
+                                                        errors.barangay}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="city_province">City / Province <span className="text-red-500">*</span></Label>
-                                            <Input id="city_province" value={data.city_province} onChange={(e) => setData('city_province', e.target.value)} />
-                                            {(zodErrors.city_province || errors.city_province) && <p className="text-xs text-destructive">{zodErrors.city_province || errors.city_province}</p>}
+                                            <Label htmlFor="city_province">
+                                                City / Province{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Input
+                                                id="city_province"
+                                                value={data.city_province}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'city_province',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            {(zodErrors.city_province ||
+                                                errors.city_province) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.city_province ||
+                                                        errors.city_province}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Contact */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
-                                        <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} placeholder="you@example.com" />
-                                        {(zodErrors.email || errors.email) && <p className="text-xs text-destructive">{zodErrors.email || errors.email}</p>}
+                                        <Label htmlFor="email">
+                                            Email Address{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) =>
+                                                setData('email', e.target.value)
+                                            }
+                                            placeholder="you@example.com"
+                                        />
+                                        {(zodErrors.email || errors.email) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.email ||
+                                                    errors.email}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="contact_number">Contact Number <span className="text-red-500">*</span></Label>
-                                        <Input id="contact_number" value={data.contact_number} onChange={(e) => setData('contact_number', e.target.value)} placeholder="09XX XXX XXXX" />
-                                        {(zodErrors.contact_number || errors.contact_number) && <p className="text-xs text-destructive">{zodErrors.contact_number || errors.contact_number}</p>}
+                                        <Label htmlFor="contact_number">
+                                            Contact Number{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="contact_number"
+                                            value={data.contact_number}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'contact_number',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="09XX XXX XXXX"
+                                        />
+                                        {(zodErrors.contact_number ||
+                                            errors.contact_number) && (
+                                            <p className="text-xs text-destructive">
+                                                {zodErrors.contact_number ||
+                                                    errors.contact_number}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Navigation */}
-                            <div className="flex items-center justify-end gap-3 mt-8 pt-5 border-t border-gray-100">
-                                <span className="text-xs text-gray-400 hidden sm:block">Step 1 of 2</span>
-                                <Button onClick={handleNext} className="bg-black hover:bg-gray-900 text-white">
+                            <div className="mt-8 flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
+                                <span className="hidden text-xs text-gray-400 sm:block">
+                                    Step 1 of 2
+                                </span>
+                                <Button
+                                    onClick={handleNext}
+                                    className="bg-black text-white hover:bg-gray-900"
+                                >
                                     Next
-                                    <svg className="size-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    <svg
+                                        className="ml-1 size-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 5l7 7-7 7"
+                                        />
                                     </svg>
                                 </Button>
                             </div>
@@ -522,48 +1068,109 @@ return prev;
                     {/* Step 2: Review & Confirm */}
                     {step === 2 && (
                         <div className="p-6">
-                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-red-100">
-                                <div className="flex size-9 items-center justify-center rounded-full bg-red-50 text-red-600 shrink-0">
-                                    <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <div className="mb-6 flex items-center gap-3 border-b border-red-100 pb-4">
+                                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+                                    <svg
+                                        className="size-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-base">Review & Confirm</h3>
-                                    <p className="text-xs text-gray-500">Please review all your answers carefully before submitting.</p>
+                                    <h3 className="text-base font-semibold">
+                                        Review & Confirm
+                                    </h3>
+                                    <p className="text-xs text-gray-500">
+                                        Please review all your answers carefully
+                                        before submitting.
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="space-y-5 text-sm">
                                 {/* Personal Data Review */}
-                                <div className="rounded-xl border border-gray-200 overflow-hidden">
-                                    <div className="flex items-center gap-2 bg-red-50 px-4 py-2.5 border-b border-red-100">
+                                <div className="overflow-hidden rounded-xl border border-gray-200">
+                                    <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-4 py-2.5">
                                         <span>👤</span>
-                                        <p className="text-xs font-bold text-red-700 uppercase tracking-wider">Personal Data</p>
+                                        <p className="text-xs font-bold tracking-wider text-red-700 uppercase">
+                                            Personal Data
+                                        </p>
                                     </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-gray-100">
+                                    <div className="grid grid-cols-2 gap-px bg-gray-100 sm:grid-cols-3">
                                         {[
                                             ['Surname', data.surname],
                                             ['Given Name', data.given_name],
-                                            ['Middle Name', data.middle_name || '—'],
+                                            [
+                                                'Middle Name',
+                                                data.middle_name || '—',
+                                            ],
                                             ['Date of Birth', data.birthdate],
                                             ['Blood Type', data.blood_type],
-                                            ['Sex', data.sex === 'male' ? 'Male' : 'Female'],
-                                            ['Civil Status', data.civil_status.charAt(0).toUpperCase() + data.civil_status.slice(1)],
+                                            [
+                                                'Sex',
+                                                data.sex === 'male'
+                                                    ? 'Male'
+                                                    : 'Female',
+                                            ],
+                                            [
+                                                'Civil Status',
+                                                data.civil_status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    data.civil_status.slice(1),
+                                            ],
                                             ['Occupation', data.occupation],
-                                            ...(isRepresentative ? [] : [
-                                                ['Student/Employee ID', data.id_number || '—'],
-                                                ['House of Heroes', houseOfHeroes.find((h) => h.value === data.house_heroes)?.label || '—'],
-                                            ] as [string, string][]),
-                                            ['House No/Street', data.house_no || (data.street || '—')],
+                                            ...(isRepresentative
+                                                ? []
+                                                : ([
+                                                      [
+                                                          'Student/Employee ID',
+                                                          data.id_number || '—',
+                                                      ],
+                                                      [
+                                                          'House of Heroes',
+                                                          houseOfHeroes.find(
+                                                              (h) =>
+                                                                  h.value ===
+                                                                  data.house_heroes,
+                                                          )?.label || '—',
+                                                      ],
+                                                  ] as [string, string][])),
+                                            [
+                                                'House No/Street',
+                                                data.house_no ||
+                                                    data.street ||
+                                                    '—',
+                                            ],
                                             ['Barangay', data.barangay],
-                                            ['City/Province', data.city_province],
+                                            [
+                                                'City/Province',
+                                                data.city_province,
+                                            ],
                                             ['Email', data.email],
-                                            ['Contact No.', data.contact_number],
+                                            [
+                                                'Contact No.',
+                                                data.contact_number,
+                                            ],
                                         ].map(([label, val]) => (
-                                            <div key={label} className="bg-white px-3 py-2">
-                                                <p className="text-[0.65rem] text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
-                                                <p className="font-medium text-gray-800">{val}</p>
+                                            <div
+                                                key={label}
+                                                className="bg-white px-3 py-2"
+                                            >
+                                                <p className="mb-0.5 text-[0.65rem] tracking-wide text-gray-400 uppercase">
+                                                    {label}
+                                                </p>
+                                                <p className="font-medium text-gray-800">
+                                                    {val}
+                                                </p>
                                             </div>
                                         ))}
                                     </div>
@@ -571,19 +1178,34 @@ return prev;
 
                                 {/* Representative */}
                                 {isRepresentative && (
-                                    <div className="rounded-xl border border-amber-200 overflow-hidden">
-                                        <div className="flex items-center gap-2 bg-amber-50 px-4 py-2.5 border-b border-amber-100">
+                                    <div className="overflow-hidden rounded-xl border border-amber-200">
+                                        <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-4 py-2.5">
                                             <span>🔁</span>
-                                            <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Donating as Representative For</p>
+                                            <p className="text-xs font-bold tracking-wider text-amber-700 uppercase">
+                                                Donating as Representative For
+                                            </p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-px bg-gray-100">
                                             {[
-                                                ['Student/Employee ID', data.id_number],
-                                                ['Full Name', data.representative_full_name],
+                                                [
+                                                    'Student/Employee ID',
+                                                    data.id_number,
+                                                ],
+                                                [
+                                                    'Full Name',
+                                                    data.representative_full_name,
+                                                ],
                                             ].map(([label, val]) => (
-                                                <div key={label} className="bg-white px-3 py-2">
-                                                    <p className="text-[0.65rem] text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
-                                                    <p className="font-medium text-gray-800">{val || '—'}</p>
+                                                <div
+                                                    key={label}
+                                                    className="bg-white px-3 py-2"
+                                                >
+                                                    <p className="mb-0.5 text-[0.65rem] tracking-wide text-gray-400 uppercase">
+                                                        {label}
+                                                    </p>
+                                                    <p className="font-medium text-gray-800">
+                                                        {val || '—'}
+                                                    </p>
                                                 </div>
                                             ))}
                                         </div>
@@ -593,44 +1215,94 @@ return prev;
 
                             {/* Consent */}
                             <div className="mt-5 rounded-xl border border-red-200 bg-red-50/40 p-4">
-                                <div className="flex gap-3 mb-4">
-                                    <svg className="size-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                <div className="mb-4 flex gap-3">
+                                    <svg
+                                        className="mt-0.5 size-5 shrink-0 text-red-500"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
                                     </svg>
-                                    <p className="text-xs text-gray-600 italic leading-relaxed">
-                                        "I voluntarily give my consent for the collection, use, and processing of my personal data for the blood donation event. I declare that I have truthfully answered all of the above questions."
+                                    <p className="text-xs leading-relaxed text-gray-600 italic">
+                                        "I voluntarily give my consent for the
+                                        collection, use, and processing of my
+                                        personal data for the blood donation
+                                        event. I declare that I have truthfully
+                                        answered all of the above questions."
                                     </p>
                                 </div>
-                                <label className="flex items-start gap-3 cursor-pointer">
+                                <label className="flex cursor-pointer items-start gap-3">
                                     <input
                                         type="checkbox"
                                         checked={data.consent === '1'}
-                                        onChange={(e) => setData('consent', e.target.checked ? '1' : '')}
+                                        onChange={(e) =>
+                                            setData(
+                                                'consent',
+                                                e.target.checked ? '1' : '',
+                                            )
+                                        }
                                         className="mt-1 size-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
                                     />
-                                    <span className="text-sm text-gray-700">I have read and understand the consent terms.</span>
+                                    <span className="text-sm text-gray-700">
+                                        I have read and understand the consent
+                                        terms.
+                                    </span>
                                 </label>
-                                {errors.consent && <p className="text-xs text-destructive mt-1">{errors.consent}</p>}
+                                {errors.consent && (
+                                    <p className="mt-1 text-xs text-destructive">
+                                        {errors.consent}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Navigation */}
-                            <div className="flex items-center justify-between gap-3 mt-8 pt-5 border-t border-gray-100">
+                            <div className="mt-8 flex items-center justify-between gap-3 border-t border-gray-100 pt-5">
                                 <Button onClick={handleBack} variant="ghost">
-                                    <svg className="size-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    <svg
+                                        className="mr-1 size-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15 19l-7-7 7-7"
+                                        />
                                     </svg>
                                     Back
                                 </Button>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-xs text-gray-400 hidden sm:block">Step 2 of 2</span>
+                                    <span className="hidden text-xs text-gray-400 sm:block">
+                                        Step 2 of 2
+                                    </span>
                                     <Button
                                         onClick={handleSubmit}
                                         disabled={processing || !data.consent}
-                                        className="bg-black hover:bg-gray-900 text-white"
+                                        className="bg-black text-white hover:bg-gray-900"
                                     >
-                                        {processing ? 'Submitting...' : 'Submit'}
-                                        <svg className="size-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        {processing
+                                            ? 'Submitting...'
+                                            : 'Submit'}
+                                        <svg
+                                            className="ml-1 size-4"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M5 13l4 4L19 7"
+                                            />
                                         </svg>
                                     </Button>
                                 </div>
