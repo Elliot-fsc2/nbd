@@ -17,9 +17,10 @@ class EventRegistrationSeeder extends Seeder
         $donors = Donor::all();
 
         foreach ($donors as $i => $donor) {
-            EventRegistration::create([
+            EventRegistration::firstOrCreate([
                 'donor_id' => $donor->id,
                 'event_id' => $event->id,
+            ], [
                 'hospital_id' => $hospital->id,
                 'queue_number' => str_pad($i + 1, 3, '0', STR_PAD_LEFT),
                 'status' => 'registered',

@@ -79,7 +79,10 @@ class DonorSeeder extends Seeder
         ];
 
         foreach ($donors as $donor) {
-            Donor::create($donor);
+            Donor::firstOrCreate(
+                ['tracking_code' => $donor['tracking_code']],
+                $donor,
+            );
         }
     }
 }
