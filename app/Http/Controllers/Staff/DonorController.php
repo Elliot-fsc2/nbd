@@ -24,7 +24,9 @@ class DonorController extends Controller
                 $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('id_number', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('tracking_code', 'like', "%{$search}%");
+                    ->orWhere('tracking_code', 'like', "%{$search}%")
+                    ->orWhere('data->representative_full_name', 'like', "%{$search}%")
+                    ->orWhere('data->id_number', 'like', "%{$search}%");
             });
         }
 
@@ -46,6 +48,7 @@ class DonorController extends Controller
                     'tracking_code' => $donor->tracking_code,
                     'donor_type' => $donor->donor_type,
                     'full_name' => $donor->full_name,
+                    'id_number' => $donor->id_number,
                     'email' => $donor->email,
                     'contact_number' => $donor->contact_number,
                     'outcome_status' => $donor->outcome_status?->value,
@@ -58,6 +61,7 @@ class DonorController extends Controller
                     'completed_time' => $registration?->completed_at?->isoFormat('h:mm A'),
                     'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
+                    'representative_for' => $donor->data['representative_full_name'] ?? null,
                     'data' => $donor->data,
                 ];
             }),

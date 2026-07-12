@@ -19,6 +19,7 @@ interface Donor {
     tracking_code: string;
     donor_type: string;
     full_name: string;
+    id_number: string | null;
     email: string;
     contact_number: string | null;
     outcome_status: string | null;
@@ -31,6 +32,7 @@ interface Donor {
     completed_time: string | null;
     course_name: string | null;
     house_heroes_label: string | null;
+    representative_for: string | null;
     data: Record<string, string> | null;
 }
 
@@ -203,7 +205,9 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Full Name</TableHead>
+                                <TableHead>ID Number</TableHead>
                                 <TableHead>Type</TableHead>
+                                <TableHead>Representing</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Contact</TableHead>
                                 <TableHead>Check-in</TableHead>
@@ -215,7 +219,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={10} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -230,11 +234,13 @@ export default function DonorsIndex({ donors, filters }: Props) {
                                         }}
                                     >
                                         <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
                                         <TableCell>
                                             <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
                                                 {donorTypeLabels[donor.donor_type] ?? donor.donor_type}
                                             </span>
                                         </TableCell>
+                                        <TableCell className="text-muted-foreground text-xs">{donor.representative_for ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground">{donor.email}</TableCell>
                                         <TableCell className="text-muted-foreground">{donor.contact_number ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.checked_in_time ?? '-'}</TableCell>
