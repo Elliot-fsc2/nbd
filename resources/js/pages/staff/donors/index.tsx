@@ -17,6 +17,7 @@ import staff from '@/routes/staff';
 interface Donor {
     id: number;
     tracking_code: string;
+    donor_type: string;
     full_name: string;
     email: string;
     contact_number: string | null;
@@ -48,6 +49,12 @@ interface Props {
     };
 }
 
+const donorTypeLabels: Record<string, string> = {
+    student: 'Student',
+    employee: 'Employee',
+    representative: 'Representative',
+};
+
 const outcomeLabels: Record<string, string> = {
     completed: 'Completed',
     rescheduled: 'Rescheduled',
@@ -70,6 +77,7 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
         ['Call Time', donor.called_at],
         ['Completion Time', donor.completed_at],
         ['Full Name', donor.full_name],
+        ['Donor Type', donor.donor_type ? donorTypeLabels[donor.donor_type] ?? donor.donor_type : undefined],
         ['Surname', d.surname],
         ['Given Name', d.given_name],
         ['Middle Name', d.middle_name],
@@ -195,6 +203,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Full Name</TableHead>
+                                <TableHead>Type</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Contact</TableHead>
                                 <TableHead>Check-in</TableHead>
@@ -206,7 +215,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -221,6 +230,11 @@ export default function DonorsIndex({ donors, filters }: Props) {
                                         }}
                                     >
                                         <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell>
+                                            <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
+                                                {donorTypeLabels[donor.donor_type] ?? donor.donor_type}
+                                            </span>
+                                        </TableCell>
                                         <TableCell className="text-muted-foreground">{donor.email}</TableCell>
                                         <TableCell className="text-muted-foreground">{donor.contact_number ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.checked_in_time ?? '-'}</TableCell>

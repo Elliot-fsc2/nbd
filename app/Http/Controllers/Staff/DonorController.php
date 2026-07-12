@@ -44,6 +44,7 @@ class DonorController extends Controller
                 return [
                     'id' => $donor->id,
                     'tracking_code' => $donor->tracking_code,
+                    'donor_type' => $donor->donor_type,
                     'full_name' => $donor->full_name,
                     'email' => $donor->email,
                     'contact_number' => $donor->contact_number,
