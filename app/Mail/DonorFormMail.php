@@ -40,7 +40,13 @@ class DonorFormMail extends Mailable
     /** @return array<int, Attachment> */
     public function attachments(): array
     {
-        $pdf = app(PdfGenerationService::class)->generate($this->donor);
+        $pdfService = app(PdfGenerationService::class);
+
+        if (! $pdfService->supports($this->donor)) {
+            return [];
+        }
+
+        $pdf = $pdfService->generate($this->donor);
 
         return [
             Attachment::fromData(fn () => $pdf, 'donation-form-'.Str::slug($this->donor->full_name).'.pdf')

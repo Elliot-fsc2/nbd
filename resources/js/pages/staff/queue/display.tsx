@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { usePoll } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
-import { Badge } from '@/components/ui/badge';
 
 interface Donor {
     id: number;
@@ -76,82 +75,81 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
     return (
         <>
             <Head title={`Display - ${event.name}`} />
-            <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-50 via-white to-blue-50 text-slate-900 overflow-hidden">
-                <div className="px-8 pt-6 pb-2">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-800">
-                                {event.name}
-                            </h1>
-                            {event.venue && (
-                                <p className="text-base font-semibold text-slate-600">{event.venue}</p>
-                            )}
-                        </div>
-                        <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-500/30 font-bold">
-                            LIVE
-                        </Badge>
+            <div className="flex h-screen flex-col bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white overflow-hidden">
+                <div className="flex items-center justify-between px-10 py-3">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-wide text-blue-200">
+                            {event.name}
+                        </h1>
+                        {event.venue && (
+                            <p className="text-xl font-semibold text-blue-300/70">{event.venue}</p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <span className="text-2xl font-bold text-blue-200/80">
+                            {waitingCount} waiting
+                        </span>
+                        <span className="animate-pulse text-xl font-bold text-red-400">● LIVE</span>
                     </div>
                 </div>
 
-                <div className="flex flex-1 flex-col items-center justify-center px-8 gap-8">
-                    <div className="text-center">
-                        <p className="text-3xl tracking-[0.3em] uppercase text-slate-600 font-bold">
+                <div className="flex flex-1 items-stretch gap-4 px-10 pb-4">
+                    <div className="flex flex-[3] flex-col items-center justify-center">
+                        <p className="mb-6 text-3xl tracking-[0.4em] uppercase text-blue-300 font-bold">
                             Now Serving
                         </p>
-                    </div>
 
-                    {current.length > 0 ? (
-                        <div className="w-full max-w-6xl">
-                            <div className={`grid gap-6 ${current.length === 1 ? 'grid-cols-1' : current.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+                        {current.length > 0 ? (
+                            <div className={`grid w-full gap-6 ${current.length === 1 ? 'grid-cols-1' : current.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
                                 {current.map((reg, i) => (
-                                    <div key={reg.id} className="rounded-2xl bg-gradient-to-br from-red-600 to-red-700 p-8 shadow-2xl shadow-red-500/20 text-center">
+                                    <div key={reg.id} className="flex flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-red-600 to-red-800 px-8 py-10 shadow-2xl shadow-red-500/30 text-center min-h-0">
                                         {current.length > 1 && (
-                                            <p className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-2">
+                                            <p className="mb-2 text-2xl font-semibold tracking-wider text-white/60 uppercase">
                                                 Booth {i + 1}
                                             </p>
                                         )}
-                                        <p className={`font-black leading-none tracking-wider text-white drop-shadow-lg ${current.length === 1 ? 'text-[8rem]' : 'text-6xl'}`}>
+                                        <p className="font-black leading-none tracking-wider text-white drop-shadow-2xl text-[10rem]">
                                             #{reg.queue_number?.slice(-3)}
                                         </p>
-                                        <p className={`mt-4 font-bold text-white ${current.length === 1 ? 'text-5xl' : 'text-3xl'}`}>
+                                        <p className="mt-4 font-bold text-white text-5xl leading-tight">
                                             {reg.donor.full_name}
                                         </p>
                                         {reg.hospital && (
-                                            <p className={`mt-2 font-bold text-white/80 ${current.length === 1 ? 'text-2xl' : 'text-lg'}`}>
+                                            <p className="mt-3 text-3xl font-bold text-white/70">
                                                 {reg.hospital.name}
                                             </p>
                                         )}
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center w-full max-w-4xl rounded-3xl border-2 border-dashed border-slate-300 p-12">
-                            <p className="text-4xl text-slate-500 font-bold">
-                                Waiting for next donor...
-                            </p>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="flex items-center justify-center w-full rounded-3xl border-2 border-dashed border-blue-400/40 p-12">
+                                <p className="text-6xl font-bold text-blue-300/50">
+                                    Waiting for next donor...
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
                     {next.length > 0 && (
-                        <div className="w-full max-w-4xl">
-                            <p className="mb-4 text-xl text-slate-600 font-bold tracking-wide uppercase">
+                        <div className="flex flex-1 flex-col justify-center rounded-3xl border border-blue-400/20 bg-blue-900/30 px-6 py-6">
+                            <p className="mb-4 text-center text-2xl font-bold tracking-wider uppercase text-blue-300">
                                 Next Up
                             </p>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="flex flex-col gap-3">
                                 {next.map((reg) => (
                                     <div
                                         key={reg.id}
-                                        className="rounded-2xl border border-slate-300 bg-white p-6 text-center shadow-md"
+                                        className="rounded-2xl border border-blue-400/20 bg-blue-800/40 px-5 py-4 text-center"
                                     >
-                                        <p className="text-4xl font-black text-slate-800">
+                                        <p className="text-5xl font-black text-white">
                                             #{reg.queue_number?.slice(-3)}
                                         </p>
-                                        <p className="mt-2 text-xl font-bold text-slate-700">
+                                        <p className="mt-1 text-2xl font-bold text-white">
                                             {reg.donor.full_name}
                                         </p>
                                         {reg.hospital && (
-                                            <p className="mt-1 text-base font-semibold text-slate-500">
+                                            <p className="text-xl font-semibold text-blue-200/70">
                                                 {reg.hospital.name}
                                             </p>
                                         )}
@@ -160,13 +158,6 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
                             </div>
                         </div>
                     )}
-                </div>
-
-                <div className="border-t border-slate-300 px-8 py-4">
-                    <div className="flex items-center justify-between text-base font-semibold text-slate-500">
-                        <span>{waitingCount} waiting in queue</span>
-                        <span className="animate-pulse text-red-600">● Live</span>
-                    </div>
                 </div>
             </div>
         </>

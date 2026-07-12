@@ -53,19 +53,19 @@ class QueueController extends Controller
     public function eventQueue(BloodDonationEvent $event): Response
     {
         $current = $event->registrations()
-            ->with('donor')
+            ->with('donor', 'hospital')
             ->where('status', 'in_progress')
             ->get();
 
         $waiting = $event->registrations()
-            ->with('donor')
+            ->with('donor', 'hospital')
             ->where('status', 'checked_in')
             ->orderBy('queue_number')
             ->take(100)
             ->get();
 
         $completed = $event->registrations()
-            ->with('donor')
+            ->with('donor', 'hospital')
             ->whereIn('status', ['completed', 'skipped'])
             ->latest()
             ->take(10)

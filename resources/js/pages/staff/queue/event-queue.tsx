@@ -19,9 +19,16 @@ interface Donor {
     tracking_code: string;
 }
 
+interface Hospital {
+    id: number;
+    name: string;
+    code: string;
+}
+
 interface EventRegistration {
     id: number;
     donor: Donor;
+    hospital: Hospital | null;
     queue_number: string;
     status: string;
 }
@@ -120,6 +127,11 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                 <p className="mt-2 text-xl font-semibold">
                                                     {reg.donor.full_name}
                                                 </p>
+                                                {reg.hospital && (
+                                                    <p className="text-sm font-medium text-primary/70">
+                                                        {reg.hospital.name}
+                                                    </p>
+                                                )}
                                                 <p className="text-sm text-muted-foreground">
                                                     ID: {reg.donor.id_number ?? 'N/A'}
                                                 </p>
@@ -158,6 +170,9 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                     <TableCell>
                                                         <p className="font-medium">{reg.donor.full_name}</p>
                                                         <p className="text-xs text-muted-foreground">{reg.donor.id_number ?? 'N/A'}</p>
+                                                        {reg.hospital && (
+                                                            <p className="text-xs text-muted-foreground">{reg.hospital.name}</p>
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge variant="secondary">Waiting</Badge>
@@ -212,6 +227,9 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                             <li key={reg.id}>
                                                 <Separator className="mb-2" />
                                                 <p className="text-sm font-medium">{reg.donor.full_name}</p>
+                                                {reg.hospital && (
+                                                    <p className="text-xs text-muted-foreground">{reg.hospital.name}</p>
+                                                )}
                                                 <p className="text-xs text-muted-foreground">
                                                     #{reg.queue_number} &middot; {reg.status}
                                                 </p>

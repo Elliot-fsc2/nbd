@@ -7,6 +7,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class PdfGenerationService
 {
+    public function supports(Donor $donor): bool
+    {
+        return view()->exists('pdf-templates.'.strtolower($donor->assignedHospital->code));
+    }
+
     public function generate(Donor $donor): string
     {
         $template = 'pdf-templates.'.strtolower($donor->assignedHospital->code);
