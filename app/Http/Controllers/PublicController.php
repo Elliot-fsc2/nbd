@@ -72,8 +72,8 @@ class PublicController extends Controller
             'house_no' => ['nullable', 'string'],
             'street' => ['nullable', 'string'],
             'subdivision' => ['nullable', 'string', 'regex:/^[\pL\pN\s.,\-\']*$/u'],
-            'barangay' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
-            'city_province' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']+$/u'],
+            'barangay' => ['nullable', 'string', 'max:255'],
+            'city_province' => ['nullable', 'string', 'max:255'],
 
             'email' => ['required', 'email', function (string $attribute, mixed $value, \Closure $fail) {
                 $domain = mb_substr(mb_strstr($value, '@'), 1);

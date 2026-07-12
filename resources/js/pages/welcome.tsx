@@ -155,11 +155,11 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
             barangay: z
                 .string()
                 .min(1, 'Barangay is required')
-                .regex(nameRegex, 'Barangay should only contain letters'),
+                .regex(textRegex, 'Barangay contains invalid characters'),
             city_province: z
                 .string()
                 .min(1, 'City/province is required')
-                .regex(nameRegex, 'City/province should only contain letters'),
+                .regex(textRegex, 'City/province contains invalid characters'),
             email: z
                 .string()
                 .min(1, 'Email is required')
@@ -271,12 +271,24 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
 
         if (!result.success) {
             const fieldErrors: Record<string, string> = {};
+            let firstField = '';
 
             for (const issue of result.error.issues) {
-                fieldErrors[issue.path[0] as string] = issue.message;
+                const fieldName = issue.path[0] as string;
+                if (!fieldErrors[fieldName]) {
+                    fieldErrors[fieldName] = issue.message;
+                    if (!firstField) firstField = fieldName;
+                }
             }
 
             setZodErrors(fieldErrors);
+
+            if (firstField) {
+                setTimeout(() => {
+                    document.getElementById(firstField)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById(firstField)?.focus();
+                }, 100);
+            }
 
             return;
         }
