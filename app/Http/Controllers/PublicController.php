@@ -9,6 +9,7 @@ use App\Models\Donor;
 use App\Services\HospitalAssignmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -22,8 +23,18 @@ class PublicController extends Controller
         protected HospitalAssignmentService $assignmentService,
     ) {}
 
-    public function form(): Response
+    public function form(): Response|RedirectResponse
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+
+            return redirect()->intended(match ($user->role->value) {
+                'admin' => route('admin.dashboard'),
+                'staff' => route('staff.queue'),
+                default => '/',
+            });
+        }
+
         return Inertia::render('welcome', [
             'courses' => Cache::remember('courses', 3600, fn () => Course::with('department:id,name')->orderBy('name')->get()->toArray()),
             'houseOfHeroes' => collect(HouseOfHeroes::cases())->map(fn ($case) => [

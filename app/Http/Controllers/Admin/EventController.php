@@ -76,25 +76,43 @@ class EventController extends Controller
         return redirect()->route('admin.events.index')->with('success', 'Event deleted.');
     }
 
-    public function donors(BloodDonationEvent $event): Response
+    public function donors(Request $request, BloodDonationEvent $event): Response
     {
-        $registrations = $event->registrations()
-            ->with('donor')
-            ->latest()
+        $query = $event->registrations()->with('donor');
+
+        if ($search = $request->input('search')) {
+            $query->whereHas('donor', function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('id_number', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('tracking_code', 'like', "%{$search}%")
+                    ->orWhere('data->given_name', 'like', "%{$search}%")
+                    ->orWhere('data->surname', 'like', "%{$search}%");
+            });
+        }
+
+        $registrations = $query->latest()
             ->paginate(20)
+            ->withQueryString()
             ->through(function ($registration) {
                 return [
                     'id' => $registration->id,
                     'given_name' => $registration->donor->data['given_name'] ?? '',
                     'surname' => $registration->donor->data['surname'] ?? '',
                     'blood_type' => $registration->donor->data['blood_type'] ?? '',
-                    'created_at' => $registration->created_at->toDateTimeString(),
+                    'created_at' => $registration->created_at->isoFormat('MMM D, YYYY, h:mm A'),
                 ];
             });
 
         return Inertia::render('admin/events/donors', [
-            'event' => $event->only(['id', 'name', 'event_date', 'venue']),
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'event_date' => $event->event_date->isoFormat('MMMM D, YYYY'),
+                'venue' => $event->venue,
+            ],
             'registrations' => $registrations,
+            'filters' => $request->only(['search']),
         ]);
     }
 }
