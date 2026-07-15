@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Donor;
 use App\Services\PdfGenerationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -81,6 +82,30 @@ class DonorController extends Controller
         $donor->update($validated);
 
         return back()->with('success', 'Donor status updated.');
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->input('q');
+
+        if (! $query || strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $donors = Donor::where('id_number', 'like', "%{$query}%")
+            ->orWhere('full_name', 'like', "%{$query}%")
+            ->orWhere('data->representative_full_name', 'like', "%{$query}%")
+            ->limit(10)
+            ->get()
+            ->map(fn (Donor $donor) => [
+                'id' => $donor->id,
+                'full_name' => $donor->full_name,
+                'id_number' => $donor->id_number,
+                'email' => $donor->email,
+                'tracking_code' => $donor->tracking_code,
+            ]);
+
+        return response()->json($donors);
     }
 
     public function form(Donor $donor, PdfGenerationService $pdfService): SymfonyResponse

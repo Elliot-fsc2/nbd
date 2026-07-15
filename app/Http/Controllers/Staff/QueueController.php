@@ -82,14 +82,10 @@ class QueueController extends Controller
     public function checkIn(Request $request, BloodDonationEvent $event): RedirectResponse
     {
         $validated = $request->validate([
-            'id_number' => ['required', 'string'],
+            'donor_id' => ['required', 'integer', 'exists:donors,id'],
         ]);
 
-        $donor = Donor::where('id_number', $validated['id_number'])->first();
-
-        if (! $donor) {
-            return back()->withErrors(['id_number' => 'No donor found with that ID number.']);
-        }
+        $donor = Donor::findOrFail($validated['donor_id']);
 
         $existingRegistration = EventRegistration::where('donor_id', $donor->id)
             ->where('event_id', $event->id)
@@ -97,7 +93,7 @@ class QueueController extends Controller
 
         if ($existingRegistration) {
             if ($existingRegistration->status !== 'registered') {
-                return back()->withErrors(['id_number' => 'Donor is already checked in for this event.']);
+                return back()->withErrors(['donor_id' => 'Donor is already checked in for this event.']);
             }
         }
 

@@ -1,5 +1,6 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { usePoll } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,15 +52,67 @@ interface EventQueueProps {
 export default function EventQueue({ event, current, waiting, completed }: EventQueueProps) {
     usePoll(5000, { only: ['current', 'waiting', 'completed'] });
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        id_number: '',
-    });
+    const { errors } = usePage().props as { errors: Record<string, string> };
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Donor[]>([]);
+    const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
-    function handleCheckIn(e: React.FormEvent) {
-        e.preventDefault();
-        post(staff.events.checkin(event.id)?.url || `/staff/events/${event.id}/checkin`, {
+    useEffect(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        if (query.length < 2) {
+            setResults([]);
+            setOpen(false);
+            return;
+        }
+
+        debounceRef.current = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`/staff/donors/search?q=${encodeURIComponent(query)}`);
+                const data: Donor[] = await res.json();
+                setResults(data);
+                setOpen(data.length > 0);
+            } finally {
+                setLoading(false);
+            }
+        }, 300);
+
+        return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    }, [query]);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    function selectDonor(donor: Donor) {
+        setSelectedDonor(donor);
+        setQuery(donor.full_name);
+        setOpen(false);
+    }
+
+    function handleCheckIn() {
+        if (!selectedDonor) return;
+
+        router.post(staff.events.checkin(event.id)?.url || `/staff/events/${event.id}/checkin`, {
+            donor_id: selectedDonor.id,
+        }, {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                setSelectedDonor(null);
+                setQuery('');
+                setResults([]);
+            },
         });
     }
 
@@ -194,23 +247,51 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                             <CardHeader>
                                 <CardTitle>Check In New Donor</CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleCheckIn} className="space-y-3">
-                                    <div className="space-y-2">
-                                        <Input
-                                            type="text"
-                                            value={data.id_number}
-                                            onChange={(e) => setData('id_number', e.target.value)}
-                                            placeholder="Enter ID number..."
-                                        />
-                                        {errors.id_number && (
-                                            <p className="text-sm text-destructive">{errors.id_number}</p>
-                                        )}
-                                    </div>
-                                    <Button type="submit" disabled={processing} className="w-full">
-                                        {processing ? 'Checking...' : 'Assign Number'}
-                                    </Button>
-                                </form>
+                            <CardContent className="space-y-3">
+                                <div className="relative" ref={dropdownRef}>
+                                    <Input
+                                        type="text"
+                                        value={query}
+                                        onChange={(e) => {
+                                            setQuery(e.target.value);
+                                            if (selectedDonor) setSelectedDonor(null);
+                                        }}
+                                        placeholder="Search by ID number, name, or representative..."
+                                    />
+                                    {loading && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                                        </div>
+                                    )}
+                                    {open && results.length > 0 && (
+                                        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
+                                            {results.map((donor) => (
+                                                <button
+                                                    key={donor.id}
+                                                    type="button"
+                                                    onClick={() => selectDonor(donor)}
+                                                    className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-accent"
+                                                >
+                                                    <span className="font-medium">{donor.full_name}</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {donor.id_number ?? 'N/A'} &middot; {donor.email}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {errors.donor_id && (
+                                        <p className="mt-1 text-sm text-destructive">{errors.donor_id}</p>
+                                    )}
+                                </div>
+
+                                <Button
+                                    onClick={handleCheckIn}
+                                    disabled={!selectedDonor}
+                                    className="w-full"
+                                >
+                                    Assign Number
+                                </Button>
                             </CardContent>
                         </Card>
 

@@ -49,6 +49,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::post('/queue/{registration}/skip', [QueueController::class, 'skip'])->name('queue.skip');
 
     Route::get('/donors', [StaffDonorController::class, 'index'])->name('donors.index');
+    Route::get('/donors/search', [StaffDonorController::class, 'search'])->name('donors.search');
     Route::get('/donors/{donor}/form', [StaffDonorController::class, 'form'])->name('donors.form');
     Route::put('/donors/{donor}', [StaffDonorController::class, 'update'])->name('donors.update');
 });
