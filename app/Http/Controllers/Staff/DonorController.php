@@ -6,6 +6,7 @@ use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Donor;
+use App\Models\Hospital;
 use App\Services\PdfGenerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ class DonorController extends Controller
     public function index(Request $request): Response
     {
         $courses = Course::pluck('name', 'id');
+        $hospitals = Hospital::orderBy('name')->get(['id', 'name', 'code']);
 
         $query = Donor::with('assignedHospital', 'latestRegistration');
 
@@ -31,6 +33,10 @@ class DonorController extends Controller
                     ->orWhere('data->representative_full_name', 'like', "%{$search}%")
                     ->orWhere('data->id_number', 'like', "%{$search}%");
             });
+        }
+
+        if ($hospitalId = $request->input('hospital_id')) {
+            $query->where('assigned_hospital_id', $hospitalId);
         }
 
         $mapHouseOfHeroes = function (?string $value): ?string {
@@ -65,10 +71,12 @@ class DonorController extends Controller
                     'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
                     'representative_for' => $donor->data['representative_full_name'] ?? null,
+                    'hospital_name' => $donor->assignedHospital?->name,
                     'data' => $donor->data,
                 ];
             }),
-            'filters' => $request->only(['search']),
+            'hospitals' => $hospitals,
+            'filters' => $request->only(['search', 'hospital_id']),
         ]);
     }
 

@@ -14,6 +14,12 @@ import {
 } from '@/components/ui/dialog';
 import staff from '@/routes/staff';
 
+interface Hospital {
+    id: number;
+    name: string;
+    code: string;
+}
+
 interface Donor {
     id: number;
     tracking_code: string;
@@ -33,6 +39,7 @@ interface Donor {
     course_name: string | null;
     house_heroes_label: string | null;
     representative_for: string | null;
+    hospital_name: string | null;
     data: Record<string, string> | null;
 }
 
@@ -46,8 +53,10 @@ interface PaginatedData<T> {
 
 interface Props {
     donors: PaginatedData<Donor>;
+    hospitals: Hospital[];
     filters: {
         search?: string;
+        hospital_id?: string;
     };
 }
 
@@ -165,28 +174,40 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
                     </Button>
                 </div>
 
-                <div className="mt-4 flex gap-2">
-                    <a
-                        href={staff.donors.form(donor.id)?.url || `/staff/donors/${donor.id}/form`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <Button variant="default">Download Form</Button>
-                    </a>
-                </div>
+                {donor.hospital_name && !donor.hospital_name.toLowerCase().includes('luk') && (
+                    <div className="mt-4 flex gap-2">
+                        <a
+                            href={staff.donors.form(donor.id)?.url || `/staff/donors/${donor.id}/form`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Button variant="default">Download Form</Button>
+                        </a>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );
 }
 
-export default function DonorsIndex({ donors, filters }: Props) {
+export default function DonorsIndex({ donors, hospitals, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault();
         router.visit(staff.donors.index().url, {
-            data: { search },
+            data: { search, hospital_id: hospitalId || undefined },
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    function handleHospitalChange(value: string) {
+        setHospitalId(value);
+        router.visit(staff.donors.index().url, {
+            data: { search, hospital_id: value || undefined },
             preserveState: true,
             preserveScroll: true,
         });
@@ -199,14 +220,29 @@ export default function DonorsIndex({ donors, filters }: Props) {
                 <h1 className="mb-6 text-2xl font-bold">Donors</h1>
 
                 <form onSubmit={handleSearch} className="mb-4">
-                    <div className="flex max-w-sm gap-2">
-                        <Input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search donors..."
-                        />
-                        <Button type="submit">Search</Button>
+                    <div className="flex gap-2">
+                        <div className="flex max-w-sm gap-2">
+                            <Input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search donors..."
+                            />
+                            <Button type="submit">Search</Button>
+                        </div>
+                        <Select value={hospitalId} onValueChange={handleHospitalChange}>
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="All Hospitals" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value=" ">All Hospitals</SelectItem>
+                                {hospitals.map((hospital) => (
+                                    <SelectItem key={hospital.id} value={String(hospital.id)}>
+                                        {hospital.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </form>
 
@@ -215,6 +251,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Full Name</TableHead>
+                                <TableHead>Assigned Hospital</TableHead>
                                 <TableHead>ID Number</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Representing</TableHead>
@@ -229,7 +266,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={10} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={11} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -244,6 +281,7 @@ export default function DonorsIndex({ donors, filters }: Props) {
                                         }}
                                     >
                                         <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="text-muted-foreground text-xs">{donor.hospital_name ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
                                         <TableCell>
                                             <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
