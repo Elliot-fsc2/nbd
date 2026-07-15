@@ -164,6 +164,16 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
                         {saving ? 'Saving...' : 'Save Status'}
                     </Button>
                 </div>
+
+                <div className="mt-4 flex gap-2">
+                    <a
+                        href={staff.donors.form(donor.id)?.url || `/staff/donors/${donor.id}/form`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <Button variant="default">Download Form</Button>
+                    </a>
+                </div>
             </DialogContent>
         </Dialog>
     );
