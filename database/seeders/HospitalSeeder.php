@@ -14,5 +14,6 @@ class HospitalSeeder extends Seeder
         Hospital::firstOrCreate(['code' => 'RedCross'], ['name' => 'Red Cross']);
         Hospital::firstOrCreate(['code' => 'UMC'], ['name' => 'De la Salle University Medical Center']);
         Hospital::firstOrCreate(['code' => 'StLukes'], ['name' => "St. Luke's Hospital"]);
+        Hospital::firstOrCreate(['code' => 'eacmed'], ['name' => 'Emilio Aguinaldo College Medical Center']);
     }
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -42,6 +43,16 @@ interface Event {
     status: string;
 }
 
+interface FlashData {
+    success?: string;
+    error?: string;
+    last_checked_in?: {
+        queue_number: string;
+        donor_name: string;
+        event_name: string;
+    };
+}
+
 interface EventQueueProps {
     event: Event;
     current: EventRegistration[];
@@ -52,7 +63,15 @@ interface EventQueueProps {
 export default function EventQueue({ event, current, waiting, completed }: EventQueueProps) {
     usePoll(5000, { only: ['current', 'waiting', 'completed'] });
 
-    const { errors } = usePage().props as { errors: Record<string, string> };
+    const { errors, flash } = usePage().props as {
+        errors: Record<string, string>;
+        flash: FlashData;
+    };
+
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [receiptData, setReceiptData] = useState<FlashData['last_checked_in'] | null>(null);
+    const [checkingIn, setCheckingIn] = useState(false);
+    const [activitySearch, setActivitySearch] = useState('');
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Donor[]>([]);
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
@@ -85,6 +104,24 @@ export default function EventQueue({ event, current, waiting, completed }: Event
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
     }, [query]);
 
+    const activityDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useEffect(() => {
+        if (activityDebounceRef.current) clearTimeout(activityDebounceRef.current);
+
+        activityDebounceRef.current = setTimeout(() => {
+            router.get(staff.events.queue(event.id)?.url || `/staff/events/${event.id}/queue`, {
+                search: activitySearch || undefined,
+            }, {
+                preserveScroll: true,
+                preserveState: true,
+                replace: true,
+            });
+        }, 300);
+
+        return () => { if (activityDebounceRef.current) clearTimeout(activityDebounceRef.current); };
+    }, [activitySearch]);
+
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -104,14 +141,57 @@ export default function EventQueue({ event, current, waiting, completed }: Event
     function handleCheckIn() {
         if (!selectedDonor) return;
 
+        setReceiptData({
+            donor_name: selectedDonor.full_name,
+            event_name: event.name,
+        });
+        setShowReceipt(true);
+    }
+
+    function handlePrint() {
+        if (!selectedDonor) return;
+
+        setCheckingIn(true);
+
         router.post(staff.events.checkin(event.id)?.url || `/staff/events/${event.id}/checkin`, {
             donor_id: selectedDonor.id,
         }, {
             preserveScroll: true,
-            onSuccess: () => {
+            onSuccess: (page) => {
+                const checkedIn = (page.props as any)?.flash?.last_checked_in as FlashData['last_checked_in'] | undefined;
+                if (!checkedIn) return;
+
                 setSelectedDonor(null);
                 setQuery('');
                 setResults([]);
+                setShowReceipt(false);
+                setCheckingIn(false);
+
+                const el = document.createElement('div');
+                el.id = 'print-receipt-print';
+                el.innerHTML = `
+                    <div style="text-align:center;padding:40px 20px;font-family:system-ui,sans-serif;">
+                        <p style="font-size:12px;color:#666;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 16px">${checkedIn.event_name}</p>
+                        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 16px" />
+                        <p style="font-size:14px;color:#666;margin:0 0 8px">Queue Number</p>
+                        <p style="font-size:60px;font-weight:bold;letter-spacing:0.1em;color:#000;margin:0 0 16px">${checkedIn.queue_number}</p>
+                        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 16px" />
+                        <p style="font-size:14px;color:#666;margin:0 0 8px">Donor</p>
+                        <p style="font-size:24px;font-weight:600;color:#000;margin:0 0 16px">${checkedIn.donor_name}</p>
+                        <p style="font-size:12px;color:#666;margin:0">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                    </div>
+                `;
+                document.body.appendChild(el);
+
+                window.onafterprint = () => {
+                    document.body.removeChild(el);
+                    window.onafterprint = null;
+                };
+
+                window.print();
+            },
+            onError: () => {
+                setCheckingIn(false);
             },
         });
     }
@@ -298,6 +378,13 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                         <Card>
                             <CardHeader>
                                 <CardTitle>Recent Activity</CardTitle>
+                                <Input
+                                    type="text"
+                                    value={activitySearch}
+                                    onChange={(e) => setActivitySearch(e.target.value)}
+                                    placeholder="Search activity..."
+                                    className="mt-2"
+                                />
                             </CardHeader>
                             <CardContent>
                                 {completed.length === 0 ? (
@@ -323,6 +410,45 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                     </div>
                 </div>
             </div>
+
+            <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-base">Queue Ticket</DialogTitle>
+                        <DialogDescription className="sr-only">Print the queue ticket for the donor.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col items-center gap-3 py-4">
+                        <div className="text-center">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{receiptData?.event_name}</p>
+                        </div>
+                        <div className="border-b border-dashed w-full" />
+                        <div className="text-center">
+                            <p className="text-xs text-muted-foreground">Donor</p>
+                            <p className="text-xl font-semibold">{receiptData?.donor_name}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                        </p>
+                    </div>
+
+                    <DialogFooter className="sm:justify-center gap-2">
+                        <Button onClick={handlePrint} disabled={checkingIn} className="w-full sm:w-auto">
+                            {checkingIn ? 'Checking in...' : 'Print Ticket'}
+                        </Button>
+                        <DialogClose asChild>
+                            <Button variant="outline" disabled={checkingIn} className="w-full sm:w-auto">Cancel</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <style>{`
+                @media print {
+                    body > *:not(#print-receipt-print) { display: none !important; }
+                    #print-receipt-print { display: flex !important; align-items: center !important; justify-content: center !important; min-height: 100vh !important; }
+                }
+            `}</style>
         </>
     );
 }

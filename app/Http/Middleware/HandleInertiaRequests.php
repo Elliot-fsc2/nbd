@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->hasSession() ? $request->session()->get('success') : null,
                 'error' => fn () => $request->hasSession() ? $request->session()->get('error') : null,
+                'last_checked_in' => fn () => $request->hasSession() ? $request->session()->get('last_checked_in') : null,
             ],
         ];
     }

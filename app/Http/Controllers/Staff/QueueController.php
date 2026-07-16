@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Enums\DonorOutcomeStatus;
 use App\Http\Controllers\Controller;
 use App\Mail\QueueCalledMail;
 use App\Models\BloodDonationEvent;
 use App\Models\Donor;
 use App\Models\EventRegistration;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -50,7 +52,7 @@ class QueueController extends Controller
         ]);
     }
 
-    public function eventQueue(BloodDonationEvent $event): Response
+    public function eventQueue(Request $request, BloodDonationEvent $event): Response
     {
         $current = $event->registrations()
             ->with('donor', 'hospital')
@@ -64,12 +66,18 @@ class QueueController extends Controller
             ->take(100)
             ->get();
 
-        $completed = $event->registrations()
+        $completedQuery = $event->registrations()
             ->with('donor', 'hospital')
-            ->whereIn('status', ['completed', 'skipped'])
-            ->latest()
-            ->take(10)
-            ->get();
+            ->whereIn('status', ['completed', 'skipped']);
+
+        if ($search = $request->query('search')) {
+            $completedQuery->whereHas('donor', function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('id_number', 'like', "%{$search}%");
+            });
+        }
+
+        $completed = $completedQuery->latest()->take(50)->get();
 
         return Inertia::render('staff/queue/event-queue', [
             'event' => $event,
@@ -79,7 +87,7 @@ class QueueController extends Controller
         ]);
     }
 
-    public function checkIn(Request $request, BloodDonationEvent $event): RedirectResponse
+    public function checkIn(Request $request, BloodDonationEvent $event): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
             'donor_id' => ['required', 'integer', 'exists:donors,id'],
@@ -92,8 +100,14 @@ class QueueController extends Controller
             ->first();
 
         if ($existingRegistration) {
-            if ($existingRegistration->status !== 'registered') {
-                return back()->withErrors(['donor_id' => 'Donor is already checked in for this event.']);
+            if ($donor->outcome_status === DonorOutcomeStatus::Rescheduled) {
+                $existingRegistration->update(['status' => 'registered']);
+            } elseif ($existingRegistration->status !== 'registered') {
+                $error = 'Donor is already checked in for this event.';
+
+                return $request->wantsJson()
+                    ? response()->json(['error' => $error], 422)
+                    : back()->withErrors(['donor_id' => $error]);
             }
         }
 
@@ -126,7 +140,21 @@ class QueueController extends Controller
 
         $donor->update(['status' => 'checked_in']);
 
-        return redirect()->route('staff.events.queue', $event)->with('success', "Donor checked in. Queue number: {$queueNumber}");
+        if ($request->wantsJson()) {
+            return response()->json([
+                'queue_number' => $queueNumber,
+                'donor_name' => $donor->full_name,
+                'event_name' => $event->name,
+            ]);
+        }
+
+        return redirect()->route('staff.events.queue', $event)
+            ->with('success', "Donor checked in. Queue number: {$queueNumber}")
+            ->with('last_checked_in', [
+                'queue_number' => $queueNumber,
+                'donor_name' => $donor->full_name,
+                'event_name' => $event->name,
+            ]);
     }
 
     public function next(EventRegistration $registration): RedirectResponse
@@ -150,7 +178,10 @@ class QueueController extends Controller
             'completed_at' => now(),
         ]);
 
-        $registration->donor->update(['status' => 'completed']);
+        $registration->donor->update([
+            'status' => 'completed',
+            'outcome_status' => DonorOutcomeStatus::Completed,
+        ]);
 
         return back()->with('success', 'Donor marked as completed.');
     }
@@ -158,7 +189,11 @@ class QueueController extends Controller
     public function skip(EventRegistration $registration): RedirectResponse
     {
         $registration->update(['status' => 'skipped']);
-        $registration->donor->update(['status' => 'skipped']);
+
+        $registration->donor->update([
+            'status' => 'skipped',
+            'outcome_status' => DonorOutcomeStatus::Rescheduled,
+        ]);
 
         return back()->with('success', 'Donor skipped.');
     }

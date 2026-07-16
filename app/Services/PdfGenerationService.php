@@ -35,6 +35,7 @@ class PdfGenerationService
             'redcross' => $this->forRedCross($data),
             'umc' => $this->forUmc($data),
             'vmmc' => $this->forVmmc($data),
+            'eacmed' => $this->forEacMed($data),
             default => $data,
         };
     }
@@ -158,6 +159,42 @@ class PdfGenerationService
             'section_c' => [],
             'section_d' => [],
             'section_e' => [],
+        ];
+    }
+
+    private function forEacMed(array $data): array
+    {
+        return [
+            'facility_name' => 'Emilio Aguinaldo College Medical Center Cavite',
+            'facility_address' => 'Brgy. Salitran II, City of Dasmariñas, Cavite',
+            'facility_contact' => '(046) 416-3010',
+            'facility_department' => 'Department of Laboratory Medicine - Blood Bank Section',
+            'form_date' => now()->format('m/d/Y'),
+            'personal' => [
+                'last_name' => $data['surname'] ?? '',
+                'first_name' => $data['given_name'] ?? '',
+                'middle_name' => $data['middle_name'] ?? '',
+                'birthdate' => $data['birthdate'] ?? '',
+                'age' => $data['age'] ?? '',
+                'gender' => $data['sex'] === 'male' ? 'Male' : ($data['sex'] === 'female' ? 'Female' : ($data['sex'] ?? '')),
+                'civil_status' => match ($data['civil_status'] ?? '') {
+                    'single' => 'Single',
+                    'married' => 'Married',
+                    'divorced' => 'Separated',
+                    'widowed' => 'Widowed',
+                    default => $data['civil_status'] ?? '',
+                },
+                'contact_no' => $data['contact_number'] ?? '',
+                'email' => $data['email'] ?? '',
+                'nationality' => '',
+                'occupation' => $data['occupation'] ?? '',
+                'address_street' => trim(implode(', ', array_filter([$data['house_no'] ?? '', $data['street'] ?? '', $data['subdivision'] ?? '']))),
+                'address_barangay' => $data['barangay'] ?? '',
+                'address_town' => '',
+                'address_city' => $data['city_province'] ?? '',
+                'address_province' => $data['city_province'] ?? '',
+                'address_zip_code' => '',
+            ],
         ];
     }
 }
