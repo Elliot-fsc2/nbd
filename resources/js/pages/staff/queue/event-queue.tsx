@@ -170,15 +170,17 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                 const el = document.createElement('div');
                 el.id = 'print-receipt-print';
                 el.innerHTML = `
-                    <div style="text-align:center;padding:40px 20px;font-family:system-ui,sans-serif;">
-                        <p style="font-size:12px;color:#666;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 16px">${checkedIn.event_name}</p>
-                        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 16px" />
-                        <p style="font-size:14px;color:#666;margin:0 0 8px">Queue Number</p>
-                        <p style="font-size:60px;font-weight:bold;letter-spacing:0.1em;color:#000;margin:0 0 16px">${checkedIn.queue_number}</p>
-                        <hr style="border:none;border-top:1px dashed #ccc;margin:0 0 16px" />
-                        <p style="font-size:14px;color:#666;margin:0 0 8px">Donor</p>
-                        <p style="font-size:24px;font-weight:600;color:#000;margin:0 0 16px">${checkedIn.donor_name}</p>
-                        <p style="font-size:12px;color:#666;margin:0">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                    <div style="width:48mm;margin:0 auto;text-align:center;padding:10mm 2mm;box-sizing:border-box;font-family:'Courier New',monospace;">
+                        <p style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px;font-weight:600">${checkedIn.event_name}</p>
+                        <hr style="border:none;border-top:1px dashed #999;margin:0 0 12px" />
+                        <p style="font-size:11px;color:#555;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em">Queue Number</p>
+                        <p style="font-size:48px;font-weight:bold;letter-spacing:0.05em;color:#000;margin:0 0 12px;line-height:1">${checkedIn.queue_number}</p>
+                        <hr style="border:none;border-top:1px dashed #999;margin:0 0 12px" />
+                        <p style="font-size:11px;color:#555;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.05em">Donor</p>
+                        <p style="font-size:18px;font-weight:600;color:#000;margin:0 0 12px">${checkedIn.donor_name}</p>
+                        <hr style="border:none;border-top:1px dashed #999;margin:0 0 8px" />
+                        <p style="font-size:10px;color:#777;margin:0">${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                        <p style="font-size:9px;color:#999;margin:4mm 0 0">--- Thank you! ---</p>
                     </div>
                 `;
                 document.body.appendChild(el);
@@ -444,9 +446,13 @@ export default function EventQueue({ event, current, waiting, completed }: Event
             </Dialog>
 
             <style>{`
+                @page {
+                    size: 58mm 210mm;
+                    margin: 0mm;
+                }
                 @media print {
                     body > *:not(#print-receipt-print) { display: none !important; }
-                    #print-receipt-print { display: flex !important; align-items: center !important; justify-content: center !important; min-height: 100vh !important; }
+                    #print-receipt-print { display: block !important; width: 48mm !important; margin: 0 auto !important; }
                 }
             `}</style>
         </>

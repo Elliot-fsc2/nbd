@@ -75,7 +75,7 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
     return (
         <>
             <Head title={`Display - ${event.name}`} />
-            <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white overflow-hidden" style={{ width: '1890px', height: '7181px' }}>
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white overflow-hidden" style={{ width: '1890px', height: '7181px', overflow: 'hidden' }}>
                 <div className="flex items-center justify-between px-12 py-4">
                     <div>
                         <h1 className="text-5xl font-bold tracking-wide text-blue-200">
