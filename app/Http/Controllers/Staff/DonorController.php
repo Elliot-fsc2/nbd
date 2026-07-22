@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Enums\DonorStatus;
 use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
@@ -39,14 +40,30 @@ class DonorController extends Controller
             $query->where('assigned_hospital_id', $hospitalId);
         }
 
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($house = $request->input('house')) {
+            $query->where('data->house_heroes', $house);
+        }
+
         $mapHouseOfHeroes = function (?string $value): ?string {
             return match ($value) {
                 null => null,
-                'member' => 'Member',
-                'non_member' => 'Non-member',
                 default => HouseOfHeroes::tryFrom($value)?->label() ?? $value,
             };
         };
+
+        $statuses = collect(DonorStatus::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => ucwords(str_replace('_', ' ', $case->value)),
+        ]);
+
+        $houseOptions = collect(HouseOfHeroes::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => $case->name,
+        ]);
 
         return Inertia::render('staff/donors/index', [
             'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) use ($courses, $mapHouseOfHeroes) {
@@ -60,6 +77,7 @@ class DonorController extends Controller
                     'id_number' => $donor->id_number,
                     'email' => $donor->email,
                     'contact_number' => $donor->contact_number,
+                    'status' => $donor->status?->value,
                     'outcome_status' => $donor->outcome_status?->value,
                     'staff_remarks' => $donor->staff_remarks,
                     'checked_in_at' => $registration?->checked_in_at?->isoFormat('MMM D, YYYY, h:mm A'),
@@ -76,7 +94,9 @@ class DonorController extends Controller
                 ];
             }),
             'hospitals' => $hospitals,
-            'filters' => $request->only(['search', 'hospital_id']),
+            'statuses' => $statuses,
+            'houseOptions' => $houseOptions,
+            'filters' => $request->only(['search', 'hospital_id', 'status', 'house']),
         ]);
     }
 

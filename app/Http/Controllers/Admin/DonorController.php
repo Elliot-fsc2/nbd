@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DonorStatus;
 use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Donor;
+use App\Models\Hospital;
 use App\Services\PdfGenerationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,14 +39,28 @@ class DonorController extends Controller
             $query->where('assigned_hospital_id', $hospitalId);
         }
 
+        if ($house = $request->get('house')) {
+            $query->where('data->house_heroes', $house);
+        }
+
         $mapHouseOfHeroes = function (?string $value): ?string {
             return match ($value) {
                 null => null,
-                'member' => 'Member',
-                'non_member' => 'Non-member',
                 default => HouseOfHeroes::tryFrom($value)?->label() ?? $value,
             };
         };
+
+        $hospitals = Hospital::orderBy('name')->get(['id', 'name', 'code']);
+
+        $statuses = collect(DonorStatus::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => ucwords(str_replace('_', ' ', $case->value)),
+        ]);
+
+        $houseOptions = collect(HouseOfHeroes::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => $case->name,
+        ]);
 
         return Inertia::render('admin/donors/index', [
             'donors' => $query->latest()->paginate(20)->withQueryString()->through(function ($donor) use ($courses, $mapHouseOfHeroes) {
@@ -63,7 +79,10 @@ class DonorController extends Controller
                     'data' => $donor->data,
                 ];
             }),
-            'filters' => $request->only(['search', 'status', 'hospital_id']),
+            'hospitals' => $hospitals,
+            'statuses' => $statuses,
+            'houseOptions' => $houseOptions,
+            'filters' => $request->only(['search', 'status', 'hospital_id', 'house']),
         ]);
     }
 

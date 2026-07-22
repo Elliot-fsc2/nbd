@@ -43,6 +43,7 @@ type FormData = {
     house_heroes: string;
     course_id: string;
     year_section: string;
+    instructor_name: string;
     house_no: string;
     street: string;
     subdivision: string;
@@ -69,6 +70,7 @@ const initialData: FormData = {
     house_heroes: '',
     course_id: '',
     year_section: '',
+    instructor_name: '',
     house_no: '',
     street: '',
     subdivision: '',
@@ -173,6 +175,7 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                 ),
             house_heroes: z.string().optional(),
             course_id: z.string().optional(),
+            instructor_name: z.string().optional(),
             representative_full_name: z
                 .string()
                 .optional()
@@ -207,7 +210,7 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                     message: 'Student/Employee ID is required',
                 });
             }
-            if (!isRepresentative && !val.house_heroes) {
+            if (!val.house_heroes) {
                 ctx.addIssue({
                     code: 'custom',
                     path: ['house_heroes'],
@@ -258,14 +261,17 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
             contact_number: data.contact_number,
         };
 
-        if (isRepresentative) {
-            fields.representative_full_name = data.representative_full_name;
-            fields.id_number = data.id_number;
-        } else {
-            fields.id_number = data.id_number;
-            fields.house_heroes = data.house_heroes;
-            fields.course_id = data.course_id;
-        }
+        if (isRepresentative) {                fields.representative_full_name = data.representative_full_name;
+                fields.id_number = data.id_number;
+                fields.house_heroes = data.house_heroes;
+                fields.course_id = data.course_id;
+                fields.instructor_name = data.instructor_name;
+            } else {
+                fields.id_number = data.id_number;
+                fields.house_heroes = data.house_heroes;
+                fields.course_id = data.course_id;
+                fields.instructor_name = data.instructor_name;
+            }
 
         const result = step1Schema.safeParse(fields);
 
@@ -472,7 +478,6 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                                     : '',
                                                 id_number: '',
                                                 representative_full_name: '',
-                                                house_heroes: '',
                                                 course_id: '',
                                                 year_section: '',
                                             });
@@ -489,7 +494,7 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                             {isRepresentative && (
                                 <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/40 p-4">
                                     <p className="text-xs font-semibold tracking-wider text-amber-700 uppercase">
-                                        Representative For:
+                                        Donating as Representative For:
                                     </p>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
@@ -546,6 +551,87 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                                 </p>
                                             )}
                                         </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="house_heroes_rep">
+                                                House of Heroes
+                                                <span className="ml-0.5 text-destructive">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Select
+                                                value={data.house_heroes}
+                                                onValueChange={(v) =>
+                                                    setData('house_heroes', v)
+                                                }
+                                            >
+                                                <SelectTrigger id="house_heroes_rep">
+                                                    <SelectValue placeholder="Select..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {houseOfHeroes.map((h) => (
+                                                        <SelectItem
+                                                            key={h.value}
+                                                            value={h.value}
+                                                        >
+                                                            {h.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {(zodErrors.house_heroes ||
+                                                errors.house_heroes) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.house_heroes ||
+                                                        errors.house_heroes}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="course_id_rep">
+                                                Course
+                                            </Label>
+                                            <Select
+                                                value={data.course_id}
+                                                onValueChange={(v) =>
+                                                    setData('course_id', v)
+                                                }
+                                            >
+                                                <SelectTrigger id="course_id_rep">
+                                                    <SelectValue placeholder="Select course..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {courses.map((c) => (
+                                                        <SelectItem
+                                                            key={c.id}
+                                                            value={String(c.id)}
+                                                        >
+                                                            {c.name} (
+                                                            {c.department?.name ??
+                                                                'No Department'}
+                                                            )
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="instructor_name_rep">
+                                            Instructor's Name
+                                        </Label>
+                                        <Input
+                                            id="instructor_name_rep"
+                                            value={data.instructor_name}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'instructor_name',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            placeholder="e.g. Prof. Juan Dela Cruz"
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -862,45 +948,63 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                     </div>
                                 )}
 
-                                {/* Course */}
+                                {/* Course & Instructor (non-representatives only) */}
                                 {!isRepresentative && (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="course_id">
-                                            Course{' '}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </Label>
-                                        <Select
-                                            value={data.course_id}
-                                            onValueChange={(v) =>
-                                                setData('course_id', v)
-                                            }
-                                        >
-                                            <SelectTrigger id="course_id">
-                                                <SelectValue placeholder="Select course..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {courses.map((c) => (
-                                                    <SelectItem
-                                                        key={c.id}
-                                                        value={String(c.id)}
-                                                    >
-                                                        {c.name} (
-                                                        {c.department?.name ??
-                                                            'No Department'}
-                                                        )
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {(zodErrors.course_id ||
-                                            errors.course_id) && (
-                                            <p className="text-xs text-destructive">
-                                                {zodErrors.course_id ||
-                                                    errors.course_id}
-                                            </p>
-                                        )}
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="course_id">
+                                                Course{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
+                                            </Label>
+                                            <Select
+                                                value={data.course_id}
+                                                onValueChange={(v) =>
+                                                    setData('course_id', v)
+                                                }
+                                            >
+                                                <SelectTrigger id="course_id">
+                                                    <SelectValue placeholder="Select course..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {courses.map((c) => (
+                                                        <SelectItem
+                                                            key={c.id}
+                                                            value={String(c.id)}
+                                                        >
+                                                            {c.name} (
+                                                            {c.department?.name ??
+                                                                'No Department'}
+                                                            )
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {(zodErrors.course_id ||
+                                                errors.course_id) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.course_id ||
+                                                        errors.course_id}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="instructor_name">
+                                                Instructor's Name
+                                            </Label>
+                                            <Input
+                                                id="instructor_name"
+                                                value={data.instructor_name}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'instructor_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="e.g. Prof. Juan Dela Cruz"
+                                            />
+                                        </div>
                                     </div>
                                 )}
 
@@ -1140,22 +1244,22 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                                     data.civil_status.slice(1),
                                             ],
                                             ['Occupation', data.occupation],
-                                            ...(isRepresentative
-                                                ? []
-                                                : ([
-                                                      [
-                                                          'Student/Employee ID',
-                                                          data.id_number || '—',
-                                                      ],
-                                                      [
-                                                          'House of Heroes',
-                                                          houseOfHeroes.find(
-                                                              (h) =>
-                                                                  h.value ===
-                                                                  data.house_heroes,
-                                                          )?.label || '—',
-                                                      ],
-                                                  ] as [string, string][])),
+                                                            [
+                                                    'Student/Employee ID',
+                                                    data.id_number || '—',
+                                                ],
+                                                [
+                                                    'House of Heroes',
+                                                    houseOfHeroes.find(
+                                                        (h) =>
+                                                            h.value ===
+                                                            data.house_heroes,
+                                                    )?.label || '—',
+                                                ],
+                                                [
+                                                    'Instructor Name',
+                                                    data.instructor_name || '—',
+                                                ],
                                             [
                                                 'House No/Street',
                                                 data.house_no ||
@@ -1206,6 +1310,26 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                                 [
                                                     'Full Name',
                                                     data.representative_full_name,
+                                                ],
+                                                [
+                                                    'House of Heroes',
+                                                    houseOfHeroes.find(
+                                                        (h) =>
+                                                            h.value ===
+                                                            data.house_heroes,
+                                                    )?.label || '—',
+                                                ],
+                                                [
+                                                    'Course',
+                                                    courses.find(
+                                                        (c) =>
+                                                            String(c.id) ===
+                                                            data.course_id,
+                                                    )?.name || '—',
+                                                ],
+                                                [
+                                                    'Instructor Name',
+                                                    data.instructor_name || '—',
                                                 ],
                                             ].map(([label, val]) => (
                                                 <div

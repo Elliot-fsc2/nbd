@@ -104,7 +104,8 @@ class PublicController extends Controller
             'contact_number' => ['nullable', 'string', 'regex:/^(09|\+639)\d{9}$/'],
             'course_id' => ['nullable', 'string'],
             'year_section' => ['nullable', 'string'],
-            'house_heroes' => ['nullable', 'string', Rule::enum(HouseOfHeroes::class)],
+            'instructor_name' => ['nullable', 'string'],
+            'house_heroes' => ['required', 'string', Rule::enum(HouseOfHeroes::class)],
 
             'consent' => ['required', 'accepted'],
         ]);

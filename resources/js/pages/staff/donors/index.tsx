@@ -20,6 +20,11 @@ interface Hospital {
     code: string;
 }
 
+interface SelectOption {
+    value: string;
+    label: string;
+}
+
 interface Donor {
     id: number;
     tracking_code: string;
@@ -28,6 +33,7 @@ interface Donor {
     id_number: string | null;
     email: string;
     contact_number: string | null;
+    status: string | null;
     outcome_status: string | null;
     staff_remarks: string | null;
     checked_in_at: string | null;
@@ -54,9 +60,13 @@ interface PaginatedData<T> {
 interface Props {
     donors: PaginatedData<Donor>;
     hospitals: Hospital[];
+    statuses: SelectOption[];
+    houseOptions: SelectOption[];
     filters: {
         search?: string;
         hospital_id?: string;
+        status?: string;
+        house?: string;
     };
 }
 
@@ -70,6 +80,14 @@ const outcomeLabels: Record<string, string> = {
     completed: 'Completed',
     rescheduled: 'Rescheduled',
     not_completed: 'Not Completed',
+};
+
+const statusLabels: Record<string, string> = {
+    registered: 'Registered',
+    checked_in: 'Checked In',
+    in_progress: 'In Progress',
+    completed: 'Completed',
+    skipped: 'Skipped',
 };
 
 function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -102,6 +120,7 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
         ['House of Heroes', donor.house_heroes_label],
         ['Course', donor.course_name ?? d.course_id],
         ['Year & Section', d.year_section],
+        ['Instructor Name', d.instructor_name],
         ['Representative For', d.representative_full_name],
         ['House No', d.house_no],
         ['Street', d.street],
@@ -190,27 +209,29 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
     );
 }
 
-export default function DonorsIndex({ donors, hospitals, filters }: Props) {
+export default function DonorsIndex({ donors, hospitals, statuses, houseOptions, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
+    const [statusFilter, setStatusFilter] = useState(filters.status ?? '');
+    const [houseFilter, setHouseFilter] = useState(filters.house ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
 
-    function handleSearch(e: React.FormEvent) {
-        e.preventDefault();
+    function applyFilters() {
         router.visit(staff.donors.index().url, {
-            data: { search, hospital_id: hospitalId || undefined },
+            data: {
+                search: search || undefined,
+                hospital_id: hospitalId || undefined,
+                status: statusFilter || undefined,
+                house: houseFilter || undefined,
+            },
             preserveState: true,
             preserveScroll: true,
         });
     }
 
-    function handleHospitalChange(value: string) {
-        setHospitalId(value);
-        router.visit(staff.donors.index().url, {
-            data: { search, hospital_id: value || undefined },
-            preserveState: true,
-            preserveScroll: true,
-        });
+    function handleSearch(e: React.FormEvent) {
+        e.preventDefault();
+        applyFilters();
     }
 
     return (
@@ -230,7 +251,7 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                             />
                             <Button type="submit">Search</Button>
                         </div>
-                        <Select value={hospitalId} onValueChange={handleHospitalChange}>
+                        <Select value={hospitalId} onValueChange={(v) => { setHospitalId(v); applyFilters(); }}>
                             <SelectTrigger className="w-[200px]">
                                 <SelectValue placeholder="All Hospitals" />
                             </SelectTrigger>
@@ -239,6 +260,32 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                                 {hospitals.map((hospital) => (
                                     <SelectItem key={hospital.id} value={String(hospital.id)}>
                                         {hospital.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); applyFilters(); }}>
+                            <SelectTrigger className="w-[160px]">
+                                <SelectValue placeholder="All Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value=" ">All Status</SelectItem>
+                                {statuses.map((s) => (
+                                    <SelectItem key={s.value} value={s.value}>
+                                        {s.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={houseFilter} onValueChange={(v) => { setHouseFilter(v); applyFilters(); }}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="All Houses" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value=" ">All Houses</SelectItem>
+                                {houseOptions.map((h) => (
+                                    <SelectItem key={h.value} value={h.value}>
+                                        {h.label}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -260,13 +307,14 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                                 <TableHead>Check-in</TableHead>
                                 <TableHead>Called</TableHead>
                                 <TableHead>Completed</TableHead>
+                                <TableHead>House</TableHead>
                                 <TableHead>Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={11} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={12} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -295,8 +343,19 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.called_time ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.completed_time ?? '-'}</TableCell>
                                         <TableCell>
-                                            {donor.outcome_status ? (
+                                            {donor.house_heroes_label ? (
+                                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                                                    {donor.house_heroes_label}
+                                                </span>
+                                            ) : '-'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {donor.status ? (
                                                 <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                                                    {statusLabels[donor.status] ?? donor.status}
+                                                </span>
+                                            ) : donor.outcome_status ? (
+                                                <span className="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">
                                                     {outcomeLabels[donor.outcome_status] ?? donor.outcome_status}
                                                 </span>
                                             ) : (
@@ -319,7 +378,7 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                             {donors.current_page > 1 && (
                                 <Link
                                     href={staff.donors.index().url}
-                                    data={{ page: donors.current_page - 1, search: filters.search }}
+                                    data={{ page: donors.current_page - 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, house: filters.house }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -329,7 +388,7 @@ export default function DonorsIndex({ donors, hospitals, filters }: Props) {
                             {donors.current_page < donors.last_page && (
                                 <Link
                                     href={staff.donors.index().url}
-                                    data={{ page: donors.current_page + 1, search: filters.search }}
+                                    data={{ page: donors.current_page + 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, house: filters.house }}
                                     preserveState
                                     preserveScroll
                                 >
