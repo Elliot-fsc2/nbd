@@ -30,6 +30,9 @@ class ExportDonors extends Command
         'city_province',
         'house_heroes',
         'representative_full_name',
+        'course_id',
+        'year_section',
+        'instructor_name',
         'consent',
     ];
 

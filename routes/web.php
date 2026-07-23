@@ -33,6 +33,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('events/{event}/donors', [EventController::class, 'donors'])->name('events.donors');
 
     Route::get('donors', [DonorController::class, 'index'])->name('donors.index');
+    Route::get('donors/export', [DonorController::class, 'export'])->name('donors.export');
     Route::get('donors/{donor}/form', [DonorController::class, 'form'])->name('donors.form');
 
     Route::resource('departments', DepartmentController::class)->except(['show']);
@@ -49,6 +50,7 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::post('/queue/{registration}/skip', [QueueController::class, 'skip'])->name('queue.skip');
 
     Route::get('/donors', [StaffDonorController::class, 'index'])->name('donors.index');
+    Route::get('/donors/export', [StaffDonorController::class, 'export'])->name('donors.export');
     Route::get('/donors/search', [StaffDonorController::class, 'search'])->name('donors.search');
     Route::get('/donors/{donor}/form', [StaffDonorController::class, 'form'])->name('donors.form');
     Route::put('/donors/{donor}', [StaffDonorController::class, 'update'])->name('donors.update');

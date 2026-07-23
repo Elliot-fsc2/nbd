@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DonorController extends Controller
 {
@@ -46,6 +47,14 @@ class DonorController extends Controller
 
         if ($house = $request->input('house')) {
             $query->where('data->house_heroes', $house);
+        }
+
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
         }
 
         $mapHouseOfHeroes = function (?string $value): ?string {
@@ -96,7 +105,7 @@ class DonorController extends Controller
             'hospitals' => $hospitals,
             'statuses' => $statuses,
             'houseOptions' => $houseOptions,
-            'filters' => $request->only(['search', 'hospital_id', 'status', 'house']),
+            'filters' => $request->only(['search', 'hospital_id', 'status', 'house', 'date_from', 'date_to']),
         ]);
     }
 
@@ -134,6 +143,106 @@ class DonorController extends Controller
             ]);
 
         return response()->json($donors);
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $query = Donor::with('assignedHospital');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('id_number', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('tracking_code', 'like', "%{$search}%")
+                    ->orWhere('data->representative_full_name', 'like', "%{$search}%")
+                    ->orWhere('data->id_number', 'like', "%{$search}%");
+            });
+        }
+
+        if ($hospitalId = $request->input('hospital_id')) {
+            $query->where('assigned_hospital_id', $hospitalId);
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($house = $request->input('house')) {
+            $query->where('data->house_heroes', $house);
+        }
+
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
+        $courses = Course::pluck('name', 'id');
+        $donors = $query->latest()->get();
+
+        $headers = [
+            'ID', 'Tracking Code', 'Donor Type', 'ID Number', 'Full Name',
+            'Email', 'Contact Number', 'Hospital', 'Course', 'Status',
+            'Outcome Status', 'Staff Remarks',
+            'Surname', 'Given Name', 'Middle Name', 'Birthdate', 'Age',
+            'Sex', 'Civil Status', 'Blood Type', 'Occupation',
+            'House No', 'Street', 'Subdivision', 'Barangay', 'City/Province',
+            'House of Heroes', 'Representative For', 'Year & Section',
+            'Instructor Name', 'Created At',
+        ];
+
+        $callback = function () use ($donors, $courses, $headers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+
+            foreach ($donors as $donor) {
+                $data = $donor->data ?? [];
+                $courseId = $data['course_id'] ?? null;
+
+                fputcsv($handle, [
+                    $donor->id,
+                    $donor->tracking_code,
+                    $donor->donor_type?->value ?? '',
+                    $donor->id_number,
+                    $donor->full_name,
+                    $donor->email,
+                    $donor->contact_number,
+                    $donor->assignedHospital?->name ?? '',
+                    $courseId && $courses->has($courseId) ? $courses[$courseId] : '',
+                    $donor->status?->value ?? '',
+                    $donor->outcome_status?->value ?? '',
+                    $donor->staff_remarks ?? '',
+                    $data['surname'] ?? '',
+                    $data['given_name'] ?? '',
+                    $data['middle_name'] ?? '',
+                    $data['birthdate'] ?? '',
+                    $data['age'] ?? '',
+                    $data['sex'] ?? '',
+                    $data['civil_status'] ?? '',
+                    $data['blood_type'] ?? '',
+                    $data['occupation'] ?? '',
+                    $data['house_no'] ?? '',
+                    $data['street'] ?? '',
+                    $data['subdivision'] ?? '',
+                    $data['barangay'] ?? '',
+                    $data['city_province'] ?? '',
+                    $data['house_heroes'] ?? '',
+                    $data['representative_full_name'] ?? '',
+                    $data['year_section'] ?? '',
+                    $data['instructor_name'] ?? '',
+                    $donor->created_at,
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->streamDownload($callback, 'donors-export-'.now()->format('Y-m-d_His').'.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 
     public function form(Donor $donor, PdfGenerationService $pdfService): SymfonyResponse

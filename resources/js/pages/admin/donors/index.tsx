@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { Head, Link } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -11,6 +12,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import type { DateRange } from 'react-day-picker';
 import admin from '@/routes/admin';
 
 interface Hospital {
@@ -57,6 +60,8 @@ interface Props {
         status?: string;
         hospital_id?: string;
         house?: string;
+        date_from?: string;
+        date_to?: string;
     };
 }
 
@@ -148,6 +153,17 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
     const [houseFilter, setHouseFilter] = useState(filters.house ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
 
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(
+        filters.date_from || filters.date_to
+            ? {
+                  from: filters.date_from ? new Date(filters.date_from) : undefined,
+                  to: filters.date_to ? new Date(filters.date_to) : undefined,
+              }
+            : undefined,
+    );
+
+    const hasActiveFilters = !!(filters.search || filters.status || filters.hospital_id || filters.house || filters.date_from || filters.date_to);
+
     function applyFilters() {
         router.visit(admin.donors.index().url, {
             data: {
@@ -155,6 +171,8 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                 status: statusFilter || undefined,
                 hospital_id: hospitalId || undefined,
                 house: houseFilter || undefined,
+                date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
             },
             preserveState: true,
             preserveScroll: true,
@@ -166,6 +184,18 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
         applyFilters();
     }
 
+    function clearFilters() {
+        setSearch('');
+        setStatusFilter('');
+        setHospitalId('');
+        setHouseFilter('');
+        setDateRange(undefined);
+        router.visit(admin.donors.index().url, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
     return (
         <>
             <Head title="Donors" />
@@ -173,55 +203,164 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                 <h1 className="mb-6 text-2xl font-bold">Donors</h1>
 
                 <form onSubmit={handleSearch} className="mb-4">
-                    <div className="flex gap-2 flex-wrap">
-                        <div className="flex max-w-sm gap-2">
-                            <Input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search donors..."
+                    <div className="rounded-lg border bg-card p-3">
+                        <div className="flex flex-wrap items-end gap-2">
+                            <div className="flex min-w-0 flex-1 basis-[200px] gap-2">
+                                <div className="relative flex-1">
+                                    <Input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Search by name, ID, email..."
+                                        className="pr-20"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 text-xs"
+                                    >
+                                        Search
+                                    </Button>
+                                </div>
+                            </div>
+                            <Select value={statusFilter} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setStatusFilter(val);
+                                router.visit(admin.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        status: val || undefined,
+                                        hospital_id: hospitalId || undefined,
+                                        house: houseFilter || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Status</SelectItem>
+                                    {statuses.map((s) => (
+                                        <SelectItem key={s.value} value={s.value}>
+                                            {s.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={houseFilter} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setHouseFilter(val);
+                                router.visit(admin.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        status: statusFilter || undefined,
+                                        hospital_id: hospitalId || undefined,
+                                        house: val || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="House" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Houses</SelectItem>
+                                    {houseOptions.map((h) => (
+                                        <SelectItem key={h.value} value={h.value}>
+                                            {h.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={hospitalId} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setHospitalId(val);
+                                router.visit(admin.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        status: statusFilter || undefined,
+                                        hospital_id: val || undefined,
+                                        house: houseFilter || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Hospital" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Hospitals</SelectItem>
+                                    {hospitals.map((hospital) => (
+                                        <SelectItem key={hospital.id} value={String(hospital.id)}>
+                                            {hospital.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <DateRangePicker
+                                value={dateRange}
+                                onChange={(range) => {
+                                    setDateRange(range);
+                                    if (range?.from && range?.to) {
+                                        router.visit(admin.donors.index().url, {
+                                            data: {
+                                                search: search || undefined,
+                                                status: statusFilter || undefined,
+                                                hospital_id: hospitalId || undefined,
+                                                house: houseFilter || undefined,
+                                                date_from: format(range.from, 'yyyy-MM-dd'),
+                                                date_to: format(range.to, 'yyyy-MM-dd'),
+                                            },
+                                            preserveState: true,
+                                            preserveScroll: true,
+                                        });
+                                    }
+                                }}
                             />
-                            <Button type="submit">Search</Button>
+                            <div className="flex items-center gap-1">
+                                {hasActiveFilters && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={clearFilters}
+                                        className="text-muted-foreground hover:text-foreground"
+                                    >
+                                        <svg className="mr-1 size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Clear
+                                    </Button>
+                                )}
+                                <a
+                                    href={admin.donors.export().url + '?' + new URLSearchParams({
+                                        ...(filters.search ? { search: filters.search } : {}),
+                                        ...(filters.status ? { status: filters.status } : {}),
+                                        ...(filters.hospital_id ? { hospital_id: filters.hospital_id } : {}),
+                                        ...(filters.house ? { house: filters.house } : {}),
+                                        ...(filters.date_from ? { date_from: filters.date_from } : {}),
+                                        ...(filters.date_to ? { date_to: filters.date_to } : {}),
+                                    }).toString()}
+                                >
+                                    <Button variant="outline" size="sm" type="button">
+                                        <svg className="mr-1.5 size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Export
+                                    </Button>
+                                </a>
+                            </div>
                         </div>
-                        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); applyFilters(); }}>
-                            <SelectTrigger className="w-[160px]">
-                                <SelectValue placeholder="All Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value=" ">All Status</SelectItem>
-                                {statuses.map((s) => (
-                                    <SelectItem key={s.value} value={s.value}>
-                                        {s.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select value={houseFilter} onValueChange={(v) => { setHouseFilter(v); applyFilters(); }}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="All Houses" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value=" ">All Houses</SelectItem>
-                                {houseOptions.map((h) => (
-                                    <SelectItem key={h.value} value={h.value}>
-                                        {h.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select value={hospitalId} onValueChange={(v) => { setHospitalId(v); applyFilters(); }}>
-                            <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="All Hospitals" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value=" ">All Hospitals</SelectItem>
-                                {hospitals.map((hospital) => (
-                                    <SelectItem key={hospital.id} value={String(hospital.id)}>
-                                        {hospital.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                 </form>
 
@@ -297,7 +436,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                             {donors.current_page > 1 && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house }}
+                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -307,7 +446,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                             {donors.current_page < donors.last_page && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house }}
+                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
