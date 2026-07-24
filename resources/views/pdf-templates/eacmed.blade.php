@@ -102,23 +102,23 @@
 
     <table style="margin-bottom: 5px;">
         <tr>
-            <td width="15%" class="text-center">
-                <div style="font-size: 8px; font-weight: bold; border: 1px solid #000; border-radius: 50%; width: 55px; height: 55px; line-height: 55px; margin: 0 auto;">EACMed</div>
+            <td width="12%" class="text-center">
+                <div style="font-size: 7px; font-weight: bold; border: 1px solid #000; border-radius: 50%; width: 50px; height: 50px; line-height: 50px; margin: 0 auto;">EACMed</div>
             </td>
-            <td width="70%" class="text-center">
+            <td width="78%" class="text-center">
                 <div class="header-title">EMILIO AGUINALDO COLLEGE MEDICAL CENTER CAVITE</div>
-                <div>Brgy. Salitran II, City of Dasmariñas, Cavite</div>
-                <div>(046) 416 - 3010</div>
+                <div style="font-size: 10px;">Brgy. Salitran II, City of Dasmariñas, Cavite</div>
+                <div style="font-size: 10px;">(046) 416 - 3010</div>
                 <div class="header-sub" style="margin-top: 5px;">Department of Laboratory Medicine - Blood Bank Section</div>
                 <div class="header-title" style="margin-top: 5px;">BLOOD DONOR HISTORY QUESTIONNAIRE</div>
             </td>
-            <td width="15%" valign="top">
-                <table class="bordered">
+            <td width="10%" valign="top">
+                <table class="bordered" style="width: 100%;">
                     <tr>
-                        <td class="font-bold text-center" style="background:#eee;">Date</td>
+                        <td class="font-bold text-center" style="background:#eee; font-size: 9px;">Date</td>
                     </tr>
                     <tr>
-                        <td class="text-center" style="height: 15px;">{{ $data['form_date'] ?? '' }}</td>
+                        <td class="text-center" style="height: 15px; font-size: 9px;">{{ $data['form_date'] ?? '' }}</td>
                     </tr>
                 </table>
             </td>
