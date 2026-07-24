@@ -118,7 +118,7 @@
                         <td class="font-bold text-center" style="background:#eee; font-size: 9px;">Date</td>
                     </tr>
                     <tr>
-                        <td class="text-center" style="height: 15px; font-size: 9px;">{{ $data['form_date'] ?? '' }}</td>
+                        <td class="text-center" style="height: 15px; font-size: 9px;"></td>
                     </tr>
                 </table>
             </td>
@@ -127,51 +127,51 @@
 
     <table class="bordered" style="margin-bottom: 5px;">
         <tr>
-            <td width="33%">
+            <td width="20%">
                 <strong>Last Name</strong><br>
                 {{ $data['personal']['last_name'] ?? '' }}
             </td>
-            <td width="33%">
+            <td width="20%">
                 <strong>First Name</strong><br>
                 {{ $data['personal']['first_name'] ?? '' }}
             </td>
-            <td width="34%">
+            <td width="20%">
                 <strong>Middle Name</strong><br>
                 {{ $data['personal']['middle_name'] ?? '' }}
             </td>
-        </tr>
-        <tr>
-            <td width="23%">
-                <strong>Birthdate</strong> <em>(mm/dd/yyyy)</em><br>
-                {{ $data['personal']['birthdate'] ? \Carbon\Carbon::parse($data['personal']['birthdate'])->format('m / d / Y') : '/ /' }}
-            </td>
-            <td width="10%">
-                <strong>Age</strong><br>
-                {{ $data['personal']['age'] ?? '' }}
-            </td>
             <td width="20%">
-                <strong>Gender</strong><br>
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? '✓' : '' }}</span> Male
-                &nbsp;
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? '✓' : '' }}</span> Female
-            </td>
-            <td width="22%">
                 <strong>Civil Status</strong><br>
                 {{ $data['personal']['civil_status'] ?? '' }}
             </td>
-            <td width="25%">
+            <td width="20%">
                 <strong>Contact No.</strong><br>
                 {{ $data['personal']['contact_no'] ?? '' }}
             </td>
         </tr>
         <tr>
             <td>
-                <strong>E-mail address</strong><br>
-                {{ $data['personal']['email'] ?? '' }}
+                <strong>Birthdate</strong> <em>(mm/dd/yyyy)</em><br>
+                {{ $data['personal']['birthdate'] ? \Carbon\Carbon::parse($data['personal']['birthdate'])->format('m / d / Y') : '/ /' }}
             </td>
             <td>
+                <strong>Age</strong><br>
+                {{ $data['personal']['age'] ?? '' }}
+            </td>
+            <td>
+                <strong>Gender</strong><br>
+                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? '✓' : '' }}</span> Male
+                &nbsp;
+                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? '✓' : '' }}</span> Female
+            </td>
+            <td colspan="2">
                 <strong>Nationality</strong><br>
                 {{ $data['personal']['nationality'] ?? '' }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <strong>E-mail address</strong><br>
+                {{ $data['personal']['email'] ?? '' }}
             </td>
             <td colspan="3">
                 <strong>Occupation</strong><br>
