@@ -237,7 +237,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     </Button>
                                 </div>
                             </div>
-                            <Select value={statusFilter} onValueChange={(v) => {
+                            <Select key={`status-${statusFilter}`} value={statusFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setStatusFilter(val);
                                 router.visit(admin.donors.index().url, {
@@ -266,7 +266,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={outcomeFilter} onValueChange={(v) => {
+                            <Select key={`outcome-${outcomeFilter}`} value={outcomeFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setOutcomeFilter(val);
                                 router.visit(admin.donors.index().url, {
@@ -295,7 +295,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={houseFilter} onValueChange={(v) => {
+                            <Select key={`house-${houseFilter}`} value={houseFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setHouseFilter(val);
                                 router.visit(admin.donors.index().url, {
@@ -324,7 +324,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={hospitalId} onValueChange={(v) => {
+                            <Select key={`hospital-${hospitalId}`} value={hospitalId} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setHospitalId(val);
                                 router.visit(admin.donors.index().url, {

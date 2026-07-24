@@ -298,36 +298,8 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     </Button>
                                 </div>
                             </div>
-                            <Select value={hospitalId} onValueChange={(v) => {
-                                const val = v === ' ' ? '' : v;
-                                setHospitalId(val);
-                                router.visit(staff.donors.index().url, {
-                                    data: {
-                                        search: search || undefined,
-                                        hospital_id: val || undefined,
-                                        status: statusFilter || undefined,
-                                        outcome_status: outcomeFilter || undefined,
-                                        house: houseFilter || undefined,
-                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
-                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
-                                    },
-                                    preserveState: true,
-                                    preserveScroll: true,
-                                });
-                            }}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Hospital" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value=" ">All Hospitals</SelectItem>
-                                    {hospitals.map((hospital) => (
-                                        <SelectItem key={hospital.id} value={String(hospital.id)}>
-                                            {hospital.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select value={statusFilter} onValueChange={(v) => {
+                            <Select key={`hospital-${hospitalId}`} value={hospitalId} onValueChange={(v) => {
+                            <Select key={`status-${statusFilter}`} value={statusFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setStatusFilter(val);
                                 router.visit(staff.donors.index().url, {
@@ -356,7 +328,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={outcomeFilter} onValueChange={(v) => {
+                            <Select key={`outcome-${outcomeFilter}`} value={outcomeFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setOutcomeFilter(val);
                                 router.visit(staff.donors.index().url, {
@@ -385,7 +357,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={houseFilter} onValueChange={(v) => {
+                            <Select key={`house-${houseFilter}`} value={houseFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setHouseFilter(val);
                                 router.visit(staff.donors.index().url, {
