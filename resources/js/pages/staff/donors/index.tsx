@@ -46,6 +46,7 @@ interface Donor {
     called_time: string | null;
     completed_time: string | null;
     course_name: string | null;
+    created_at: string | null;
     house_heroes_label: string | null;
     representative_for: string | null;
     hospital_name: string | null;
@@ -108,6 +109,7 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
 
     const fields: [string, string | undefined | null][] = [
         ['Tracking Code', donor.tracking_code],
+        ['Registered', donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : undefined],
         ['Outcome Status', donor.outcome_status ? outcomeLabels[donor.outcome_status] ?? donor.outcome_status : 'Not set'],
         ['Check-in Time', donor.checked_in_at],
         ['Call Time', donor.called_at],
@@ -476,6 +478,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Full Name</TableHead>
+                                <TableHead>Registered</TableHead>
                                 <TableHead>Assigned Hospital</TableHead>
                                 <TableHead>ID Number</TableHead>
                                 <TableHead>Type</TableHead>
@@ -492,7 +495,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={12} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={13} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -507,6 +510,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         }}
                                     >
                                         <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.hospital_name ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
                                         <TableCell>

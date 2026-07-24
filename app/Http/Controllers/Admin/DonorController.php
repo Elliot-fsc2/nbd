@@ -96,6 +96,7 @@ class DonorController extends Controller
                     'hospital_name' => $donor->assignedHospital?->name,
                     'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
+                    'created_at' => $donor->created_at,
                     'data' => $donor->data,
                 ];
             }),

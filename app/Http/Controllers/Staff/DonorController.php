@@ -109,6 +109,7 @@ class DonorController extends Controller
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
                     'representative_for' => $donor->data['representative_full_name'] ?? null,
                     'hospital_name' => $donor->assignedHospital?->name,
+                    'created_at' => $donor->created_at,
                     'data' => $donor->data,
                 ];
             }),

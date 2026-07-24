@@ -75,47 +75,47 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
     return (
         <>
             <Head title={`Display - ${event.name}`} />
-            <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white overflow-hidden" style={{ width: '1890px', height: '7181px', overflow: 'hidden' }}>
-                <div className="flex items-center justify-between px-12 py-4">
-                    <div>
-                        <h1 className="text-5xl font-bold tracking-wide text-blue-200">
+            <div className="flex min-h-dvh w-full flex-col bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white overflow-hidden">
+                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-[clamp(1rem,2.5vw,3rem)] py-[clamp(0.5rem,1.5vw,1.5rem)]">
+                    <div className="min-w-0">
+                        <h1 className="font-bold tracking-wide text-blue-200 text-[clamp(1.25rem,3vw,4rem)] truncate">
                             {event.name}
                         </h1>
                         {event.venue && (
-                            <p className="text-3xl font-semibold text-blue-300/70">{event.venue}</p>
+                            <p className="font-semibold text-blue-300/70 text-[clamp(0.875rem,1.8vw,2.5rem)]">{event.venue}</p>
                         )}
                     </div>
-                    <div className="flex items-center gap-6">
-                        <span className="text-4xl font-bold text-blue-200/80">
+                    <div className="flex shrink-0 items-center gap-[clamp(0.75rem,2vw,2rem)]">
+                        <span className="font-bold text-blue-200/80 text-[clamp(1rem,2vw,3rem)]">
                             {waitingCount} waiting
                         </span>
-                        <span className="animate-pulse text-3xl font-bold text-red-400">● LIVE</span>
+                        <span className="animate-pulse font-bold text-red-400 text-[clamp(0.875rem,1.8vw,2.5rem)]">● LIVE</span>
                     </div>
                 </div>
 
-                <div className="flex flex-1 flex-col items-stretch gap-6 px-12 pb-6">
-                    <div className="flex flex-[4] flex-col items-center justify-center">
-                        <p className="mb-8 text-5xl tracking-[0.4em] uppercase text-blue-300 font-bold">
+                <div className="flex flex-1 flex-col items-stretch gap-[clamp(0.5rem,1.5vw,1.5rem)] px-[clamp(1rem,2.5vw,3rem)] pb-[clamp(0.5rem,1.5vw,1.5rem)]">
+                    <div className="flex flex-[4] flex-col items-center justify-center min-h-0">
+                        <p className="mb-[clamp(0.5rem,1.5vw,2rem)] tracking-[0.4em] uppercase text-blue-300 font-bold text-[clamp(1rem,3vw,4rem)]">
                             Now Serving
                         </p>
 
                         {current.length > 0 ? (
-                            <div className={`grid w-full gap-8 ${current.length === 1 ? 'grid-cols-1' : current.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                            <div className={`grid w-full gap-[clamp(0.75rem,2vw,2rem)] ${current.length === 1 ? 'grid-cols-1' : current.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                                 {current.map((reg, i) => (
-                                    <div key={reg.id} className="flex flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-red-600 to-red-800 px-10 py-12 shadow-2xl shadow-red-500/30 text-center min-h-0">
+                                    <div key={reg.id} className="flex flex-col items-center justify-center rounded-2xl md:rounded-3xl bg-gradient-to-br from-red-600 to-red-800 shadow-2xl shadow-red-500/30 text-center px-[clamp(1rem,4vw,3rem)] py-[clamp(1.5rem,4vw,4rem)] min-h-0">
                                         {current.length > 1 && (
-                                            <p className="mb-4 text-4xl font-semibold tracking-wider text-white/60 uppercase">
+                                            <p className="mb-[clamp(0.5rem,1vw,1.5rem)] font-semibold tracking-wider text-white/60 uppercase text-[clamp(0.875rem,2vw,2.5rem)]">
                                                 Booth {i + 1}
                                             </p>
                                         )}
-                                        <p className="font-black leading-none tracking-wider text-white drop-shadow-2xl text-[14rem]">
+                                        <p className="font-black leading-none tracking-wider text-white drop-shadow-2xl text-[clamp(3rem,15vw,12rem)]">
                                             #{reg.queue_number?.slice(-3)}
                                         </p>
-                                        <p className="mt-6 font-bold text-white text-7xl leading-tight">
+                                        <p className="mt-[clamp(0.5rem,1.5vw,1.5rem)] font-bold text-white leading-tight text-[clamp(1rem,4vw,5rem)]">
                                             {reg.donor.full_name}
                                         </p>
                                         {reg.hospital && (
-                                            <p className="mt-4 text-4xl font-bold text-white/70">
+                                            <p className="mt-[clamp(0.25rem,1vw,1rem)] font-bold text-white/70 text-[clamp(0.875rem,2.5vw,3rem)]">
                                                 {reg.hospital.name}
                                             </p>
                                         )}
@@ -123,8 +123,8 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
                                 ))}
                             </div>
                         ) : (
-                            <div className="flex items-center justify-center w-full rounded-3xl border-2 border-dashed border-blue-400/40 p-16">
-                                <p className="text-8xl font-bold text-blue-300/50">
+                            <div className="flex items-center justify-center w-full rounded-2xl md:rounded-3xl border-2 border-dashed border-blue-400/40 p-[clamp(2rem,6vw,6rem)]">
+                                <p className="font-bold text-blue-300/50 text-center text-[clamp(1.25rem,5vw,6rem)]">
                                     Waiting for next donor...
                                 </p>
                             </div>
@@ -132,24 +132,24 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
                     </div>
 
                     {next.length > 0 && (
-                        <div className="rounded-3xl border border-blue-400/20 bg-blue-900/30 px-8 py-5">
-                            <p className="mb-4 text-center text-4xl font-bold tracking-wider uppercase text-blue-300">
+                        <div className="rounded-2xl md:rounded-3xl border border-blue-400/20 bg-blue-900/30 px-[clamp(1rem,2.5vw,2rem)] py-[clamp(0.75rem,1.5vw,1.25rem)]">
+                            <p className="mb-[clamp(0.5rem,1vw,1rem)] text-center font-bold tracking-wider uppercase text-blue-300 text-[clamp(0.875rem,2vw,2.5rem)]">
                                 Next Up
                             </p>
-                            <div className="flex flex-row gap-4 justify-center">
+                            <div className="flex flex-row flex-wrap gap-[clamp(0.5rem,1vw,1rem)] justify-center">
                                 {next.map((reg) => (
                                     <div
                                         key={reg.id}
-                                        className="flex-1 rounded-2xl border border-blue-400/20 bg-blue-800/40 px-6 py-5 text-center max-w-lg"
+                                        className="flex-1 rounded-xl md:rounded-2xl border border-blue-400/20 bg-blue-800/40 px-[clamp(0.75rem,2vw,1.5rem)] py-[clamp(0.5rem,1.5vw,1.25rem)] text-center min-w-[150px] max-w-full"
                                     >
-                                        <p className="text-6xl font-black text-white">
+                                        <p className="font-black text-white text-[clamp(1.25rem,4vw,3.5rem)]">
                                             #{reg.queue_number?.slice(-3)}
                                         </p>
-                                        <p className="mt-2 text-3xl font-bold text-white">
+                                        <p className="mt-1 font-bold text-white text-[clamp(0.75rem,2.5vw,2.25rem)]">
                                             {reg.donor.full_name}
                                         </p>
                                         {reg.hospital && (
-                                            <p className="text-2xl font-semibold text-blue-200/70">
+                                            <p className="font-semibold text-blue-200/70 text-[clamp(0.625rem,1.8vw,1.75rem)]">
                                                 {reg.hospital.name}
                                             </p>
                                         )}

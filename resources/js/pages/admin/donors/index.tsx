@@ -39,6 +39,7 @@ interface Donor {
     outcome_status: string | null;
     hospital_name: string | null;
     course_name: string | null;
+    created_at: string | null;
     house_heroes_label: string | null;
     data: Record<string, string> | null;
 }
@@ -95,6 +96,7 @@ function DonorDetailDialog({ donor, open, onOpenChange }: { donor: Donor | null;
 
     const fields: [string, string | undefined | null][] = [
         ['Tracking Code', donor.tracking_code],
+        ['Registered', donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : undefined],
         ['Status', donor.status ? statusLabels[donor.status] ?? donor.status : undefined],
         ['Donor Type', donor.donor_type ? donorTypeLabels[donor.donor_type] ?? donor.donor_type : undefined],
         ['Full Name', donor.full_name],
@@ -415,6 +417,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Full Name</TableHead>
+                                <TableHead>Registered</TableHead>
                                 <TableHead>ID Number</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>House</TableHead>
@@ -427,7 +430,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={9} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -439,6 +442,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         onClick={() => setSelectedDonor(donor)}
                                     >
                                         <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
                                         <TableCell>
                                             {donor.donor_type ? (
