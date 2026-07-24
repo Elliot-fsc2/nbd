@@ -102,8 +102,8 @@
 
     <table style="margin-bottom: 5px;">
         <tr>
-            <td width="12%" class="text-center">
-                <div style="font-size: 7px; font-weight: bold; border: 1px solid #000; border-radius: 50%; width: 50px; height: 50px; line-height: 50px; margin: 0 auto;">EACMed</div>
+            <td width="12%" class="text-center" style="vertical-align: middle;">
+                <img src="{{ public_path('images/eacmed.png') }}" style="width: 65px; height: 65px;" />
             </td>
             <td width="78%" class="text-center">
                 <div class="header-title">EMILIO AGUINALDO COLLEGE MEDICAL CENTER CAVITE</div>
@@ -159,9 +159,9 @@
             </td>
             <td>
                 <strong>Gender</strong><br>
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? '✓' : '' }}</span> Male
+                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? 'X' : '' }}</span> Male
                 &nbsp;
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? '✓' : '' }}</span> Female
+                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? 'X' : '' }}</span> Female
             </td>
             <td colspan="2">
                 <strong>Nationality</strong><br>
@@ -400,12 +400,10 @@
 
     <div style="font-size: 9px;">
         <strong>CONFIDENTIAL UNIT EXCLUSION (CUE):</strong><br>
-        If at any point during or after your blood donation, you realized that your blood may not be safe for transfusion, please inform the Blood Service Facility staff immediately. Please use your Blood Donation ID Number and the Segment Number written below in identifying you blood donation.<br><br>
-        Contact Number of Blood Service Facility: <span class="line-field" style="width: 350px;">{{ $cue->facility_contact ?? '' }}</span><br><br>
-        Segment Number: <span class="line-field" style="width: 428px;">{{ $cue->segment_number ?? '' }}</span>
+        If at any point during or after your blood donation, you realized that your blood may not be safe for transfusion, please inform the Blood Service Facility staff immediately. Please use your Blood Donation ID Number and the Segment Number written below in identifying you blood donation.<br>
+        Contact Number of Blood Service Facility: <span class="line-field" style="width: 250px;">{{ $cue->facility_contact ?? '' }}</span><br>
+        Segment Number: <span class="line-field" style="width: 300px;">{{ $cue->segment_number ?? '' }}</span>
     </div>
-
-    <div class="page-break"></div>
 
     <table class="bordered" style="margin-top: 10px;">
         <thead>
@@ -456,7 +454,7 @@
 
     <div style="margin-top: 10px; text-align: justify; font-size: 9px; line-height: 1.3;">
         <p>“I certify that I am the person referred to in all the entries,which were read and well understood by me.it is my free and voluntary act to donate my blood,aware of its risks during and after extraction. The same have been explained to me in understandable language and dialect I speak.</p>
-        <p>I am voluntarily giving my blood through <span class="line-field" style="width: 250px; text-align: center;">{{ $data['facility_name'] ?? '' }}</span>, I understand that my blood will be tested for blood type, hemoglobin, malaria, syphilis, Hepatitis B, Hepatitis C, and HIV and no official result will be released to me. If I found reactive, I agree to be referred to the appropriate facility for counselling and further management.</p>
+        <p>I am voluntarily giving my blood through <span class="line-field" style="width: 250px; text-align: center;"></span>, I understand that my blood will be tested for blood type, hemoglobin, malaria, syphilis, Hepatitis B, Hepatitis C, and HIV and no official result will be released to me. If I found reactive, I agree to be referred to the appropriate facility for counselling and further management.</p>
         <p>I certify that I have to do the best of my knowledge, truthfully answered the above questions.”</p>
     </div>
 
