@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Enums\DonorOutcomeStatus;
 use App\Enums\DonorStatus;
 use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
@@ -49,6 +50,10 @@ class DonorController extends Controller
             $query->where('data->house_heroes', $house);
         }
 
+        if ($outcomeStatus = $request->input('outcome_status')) {
+            $query->where('outcome_status', $outcomeStatus);
+        }
+
         if ($dateFrom = $request->input('date_from')) {
             $query->whereDate('created_at', '>=', $dateFrom);
         }
@@ -65,6 +70,11 @@ class DonorController extends Controller
         };
 
         $statuses = collect(DonorStatus::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => ucwords(str_replace('_', ' ', $case->value)),
+        ]);
+
+        $outcomeStatuses = collect(DonorOutcomeStatus::cases())->map(fn ($case) => [
             'value' => $case->value,
             'label' => ucwords(str_replace('_', ' ', $case->value)),
         ]);
@@ -104,8 +114,9 @@ class DonorController extends Controller
             }),
             'hospitals' => $hospitals,
             'statuses' => $statuses,
+            'outcomeStatuses' => $outcomeStatuses,
             'houseOptions' => $houseOptions,
-            'filters' => $request->only(['search', 'hospital_id', 'status', 'house', 'date_from', 'date_to']),
+            'filters' => $request->only(['search', 'hospital_id', 'status', 'outcome_status', 'house', 'date_from', 'date_to']),
         ]);
     }
 
@@ -166,6 +177,10 @@ class DonorController extends Controller
 
         if ($status = $request->input('status')) {
             $query->where('status', $status);
+        }
+
+        if ($outcomeStatus = $request->input('outcome_status')) {
+            $query->where('outcome_status', $outcomeStatus);
         }
 
         if ($house = $request->input('house')) {

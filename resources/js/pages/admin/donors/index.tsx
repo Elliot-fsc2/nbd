@@ -36,6 +36,7 @@ interface Donor {
     email: string;
     contact_number: string | null;
     status: string | null;
+    outcome_status: string | null;
     hospital_name: string | null;
     course_name: string | null;
     house_heroes_label: string | null;
@@ -54,10 +55,12 @@ interface Props {
     donors: PaginatedData<Donor>;
     hospitals: Hospital[];
     statuses: SelectOption[];
+    outcomeStatuses: SelectOption[];
     houseOptions: SelectOption[];
     filters: {
         search?: string;
         status?: string;
+        outcome_status?: string;
         hospital_id?: string;
         house?: string;
         date_from?: string;
@@ -71,6 +74,12 @@ const statusLabels: Record<string, string> = {
     in_progress: 'In Progress',
     completed: 'Completed',
     skipped: 'Skipped',
+};
+
+const outcomeLabels: Record<string, string> = {
+    completed: 'Completed',
+    rescheduled: 'Rescheduled',
+    not_completed: 'Not Completed',
 };
 
 const donorTypeLabels: Record<string, string> = {
@@ -146,11 +155,12 @@ function DonorDetailDialog({ donor, open, onOpenChange }: { donor: Donor | null;
     );
 }
 
-export default function DonorsIndex({ donors, hospitals, statuses, houseOptions, filters }: Props) {
+export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatuses, houseOptions, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [statusFilter, setStatusFilter] = useState(filters.status ?? '');
     const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
     const [houseFilter, setHouseFilter] = useState(filters.house ?? '');
+    const [outcomeFilter, setOutcomeFilter] = useState(filters.outcome_status ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(
@@ -162,13 +172,14 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
             : undefined,
     );
 
-    const hasActiveFilters = !!(filters.search || filters.status || filters.hospital_id || filters.house || filters.date_from || filters.date_to);
+    const hasActiveFilters = !!(filters.search || filters.status || filters.outcome_status || filters.hospital_id || filters.house || filters.date_from || filters.date_to);
 
     function applyFilters() {
         router.visit(admin.donors.index().url, {
             data: {
                 search: search || undefined,
                 status: statusFilter || undefined,
+                outcome_status: outcomeFilter || undefined,
                 hospital_id: hospitalId || undefined,
                 house: houseFilter || undefined,
                 date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -187,6 +198,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
     function clearFilters() {
         setSearch('');
         setStatusFilter('');
+        setOutcomeFilter('');
         setHospitalId('');
         setHouseFilter('');
         setDateRange(undefined);
@@ -230,6 +242,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                     data: {
                                         search: search || undefined,
                                         status: val || undefined,
+                                        outcome_status: outcomeFilter || undefined,
                                         hospital_id: hospitalId || undefined,
                                         house: houseFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -251,6 +264,35 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select value={outcomeFilter} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setOutcomeFilter(val);
+                                router.visit(admin.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        status: statusFilter || undefined,
+                                        outcome_status: val || undefined,
+                                        hospital_id: hospitalId || undefined,
+                                        house: houseFilter || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Outcome" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Outcomes</SelectItem>
+                                    {outcomeStatuses.map((s) => (
+                                        <SelectItem key={s.value} value={s.value}>
+                                            {s.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Select value={houseFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setHouseFilter(val);
@@ -258,6 +300,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                     data: {
                                         search: search || undefined,
                                         status: statusFilter || undefined,
+                                        outcome_status: outcomeFilter || undefined,
                                         hospital_id: hospitalId || undefined,
                                         house: val || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -286,6 +329,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                     data: {
                                         search: search || undefined,
                                         status: statusFilter || undefined,
+                                        outcome_status: outcomeFilter || undefined,
                                         hospital_id: val || undefined,
                                         house: houseFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
@@ -316,6 +360,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                             data: {
                                                 search: search || undefined,
                                                 status: statusFilter || undefined,
+                                                outcome_status: outcomeFilter || undefined,
                                                 hospital_id: hospitalId || undefined,
                                                 house: houseFilter || undefined,
                                                 date_from: format(range.from, 'yyyy-MM-dd'),
@@ -346,6 +391,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                                     href={admin.donors.export().url + '?' + new URLSearchParams({
                                         ...(filters.search ? { search: filters.search } : {}),
                                         ...(filters.status ? { status: filters.status } : {}),
+                                        ...(filters.outcome_status ? { outcome_status: filters.outcome_status } : {}),
                                         ...(filters.hospital_id ? { hospital_id: filters.hospital_id } : {}),
                                         ...(filters.house ? { house: filters.house } : {}),
                                         ...(filters.date_from ? { date_from: filters.date_from } : {}),
@@ -436,7 +482,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                             {donors.current_page > 1 && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -446,7 +492,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, houseOptions,
                             {donors.current_page < donors.last_page && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >

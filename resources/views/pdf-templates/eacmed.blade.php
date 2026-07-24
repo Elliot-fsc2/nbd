@@ -5,7 +5,7 @@
     <title>Blood Donor History Questionnaire</title>
     <style>
         @page {
-            size: A4;
+            size: 8.5in 13in;
             margin: 15px 20px;
         }
         body {

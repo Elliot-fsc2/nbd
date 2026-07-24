@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <style>
+            @page { size: 8.5in 13in; margin: 12px 16px; }
             * {
                 box-sizing: border-box;
             }
@@ -10,33 +11,34 @@
                 background: #fff;
                 color: #000;
                 font-family: sans-serif;
-                font-size: 12px;
-                padding: 20px 24px;
+                font-size: 9px;
+                margin: 0;
+                padding: 0;
             }
             .page {
                 width: 100%;
-                max-width: 950px;
-                margin: 0 auto;
+                max-width: 100%;
+                margin: 0;
                 padding: 0;
                 position: relative;
             }
             .text-xs {
-                font-size: 11px;
+                font-size: 9px;
             }
             .text-sm {
-                font-size: 12px;
-            }
-            .text-base {
-                font-size: 14px;
-            }
-            .text-lg {
-                font-size: 16px;
-            }
-            .text-10 {
                 font-size: 10px;
             }
+            .text-base {
+                font-size: 11px;
+            }
+            .text-lg {
+                font-size: 13px;
+            }
+            .text-10 {
+                font-size: 8px;
+            }
             .text-9 {
-                font-size: 9px;
+                font-size: 7.5px;
             }
             .bold {
                 font-weight: bold;
@@ -99,83 +101,83 @@
                 width: 100%;
             }
             .mt-1 {
-                margin-top: 4px;
+                margin-top: 3px;
             }
             .mt-2 {
-                margin-top: 8px;
+                margin-top: 5px;
             }
             .mt-3 {
-                margin-top: 12px;
+                margin-top: 8px;
             }
             .mb-1 {
-                margin-bottom: 4px;
+                margin-bottom: 3px;
             }
             .mb-2 {
-                margin-bottom: 8px;
+                margin-bottom: 5px;
             }
             .mb-3 {
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
             .mb-4 {
-                margin-bottom: 16px;
+                margin-bottom: 10px;
             }
             .ml-2 {
-                margin-left: 8px;
+                margin-left: 5px;
             }
             .mr-2 {
-                margin-right: 8px;
+                margin-right: 5px;
             }
             .mr-4 {
-                margin-right: 16px;
+                margin-right: 10px;
             }
             .mr-16 {
-                margin-right: 64px;
+                margin-right: 40px;
             }
             .pl-2 {
-                padding-left: 8px;
+                padding-left: 5px;
             }
             .pr-2 {
-                padding-right: 8px;
+                padding-right: 5px;
             }
             .pr-4 {
-                padding-right: 16px;
+                padding-right: 10px;
             }
             .px-1 {
-                padding-left: 4px;
-                padding-right: 4px;
+                padding-left: 3px;
+                padding-right: 3px;
             }
             .px-2 {
-                padding-left: 8px;
-                padding-right: 8px;
+                padding-left: 5px;
+                padding-right: 5px;
             }
             .py-1 {
-                padding-top: 4px;
-                padding-bottom: 4px;
+                padding-top: 3px;
+                padding-bottom: 3px;
             }
             .py-2 {
-                padding-top: 8px;
-                padding-bottom: 8px;
+                padding-top: 5px;
+                padding-bottom: 5px;
             }
             .p-1 {
-                padding: 4px;
+                padding: 3px;
             }
             .p-2 {
-                padding: 8px;
+                padding: 5px;
             }
             .p-4 {
-                padding: 16px;
+                padding: 10px;
             }
             .pt-8 {
-                padding-top: 32px;
+                padding-top: 20px;
             }
             .pb-1 {
-                padding-bottom: 4px;
+                padding-bottom: 3px;
             }
             .leading-tight {
-                line-height: 1.2;
+                line-height: 1.15;
             }
             .leading-snug {
-                line-height: 1.3;
+                line-height: 1.2;
             }
             table {
                 border-collapse: collapse;
@@ -183,9 +185,9 @@
             }
             .checkbox {
                 display: inline-block;
-                width: 14px;
-                height: 14px;
-                border: 2px solid #000;
+                width: 10px;
+                height: 10px;
+                border: 1.5px solid #000;
                 background: #fff;
                 vertical-align: middle;
             }
@@ -193,20 +195,20 @@
                 border: 2px solid #000;
             }
             .h-8 {
-                height: 32px;
+                height: 18px;
             }
             .h-6 {
-                height: 24px;
+                height: 18px;
             }
             .w-8 {
-                width: 32px;
+                width: 24px;
             }
             .w-6 {
-                width: 24px;
+                width: 18px;
             }
         </style>
     </head>
-    <body style="padding: 20px 24px">
+    <body style="padding: 0">
         <div class="page">
             <table
                 style="position: absolute; right: 32px; top: 0; width: auto"
@@ -266,12 +268,12 @@
                         </td>
                     </tr>
                 </table>
-                <h1
-                    class="bold underline"
-                    style="letter-spacing: 1px; margin-top: 8px"
+                <div
+                    class="bold underline text-sm"
+                    style="letter-spacing: 1px; margin-top: 5px"
                 >
                     BLOOD DONOR INTERVIEW SHEET
-                </h1>
+                </div>
             </div>
         </div>
 
@@ -291,17 +293,17 @@
                             <tr>
                                 <td
                                     class="border border-r"
-                                    style="height: 24px; text-align: center"
+                                    style="height: 18px; text-align: center"
                                 >
                                     {{ $data['surname'] ?? '' }}
                                 </td>
                                 <td
                                     class="border border-r"
-                                    style="height: 24px; text-align: center"
+                                    style="height: 18px; text-align: center"
                                 >
                                     {{ $data['first_name'] ?? '' }}
                                 </td>
-                                <td style="height: 24px; text-align: center">
+                                <td style="height: 18px; text-align: center">
                                     {{ $data['middle_name'] ?? '' }}
                                 </td>
                             </tr>
@@ -343,7 +345,7 @@
                                     class="border border-r"
                                     style="
                                         width: 33%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -353,7 +355,7 @@
                                     class="border border-r"
                                     style="
                                         width: 17%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -363,7 +365,7 @@
                                     class="border border-r"
                                     style="
                                         width: 33%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -372,7 +374,7 @@
                                 <td
                                     style="
                                         width: 17%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -425,7 +427,7 @@
                                         class="border border-r"
                                         style="
                                             width: 8%;
-                                            height: 24px;
+                                            height: 18px;
                                             text-align: center;
                                         "
                                     >{{ $data['address_house_no'] ?? '' }}</td>
@@ -433,7 +435,7 @@
                                     class="border border-r"
                                     style="
                                         width: 25%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -443,7 +445,7 @@
                                     class="border border-r"
                                     style="
                                         width: 17%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -453,7 +455,7 @@
                                     class="border border-r"
                                     style="
                                         width: 17%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -463,7 +465,7 @@
                                     class="border border-r"
                                     style="
                                         width: 17%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -472,7 +474,7 @@
                                 <td
                                     style="
                                         width: 16%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -504,9 +506,9 @@
                         <div
                             class="border"
                             style="
-                                height: 24px;
+                                height: 18px;
                                 text-align: center;
-                                line-height: 24px;
+                                line-height: 18px;
                             "
                         ></div>
                     </td>
@@ -524,7 +526,7 @@
                                     class="border border-r"
                                     style="
                                         width: 25%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -534,7 +536,7 @@
                                     class="border border-r"
                                     style="
                                         width: 25%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -544,7 +546,7 @@
                                     class="border border-r"
                                     style="
                                         width: 25%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -553,7 +555,7 @@
                                 <td
                                     style="
                                         width: 25%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -606,7 +608,7 @@
                                     class="border border-r"
                                     style="
                                         width: 33%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -616,7 +618,7 @@
                                     class="border border-r"
                                     style="
                                         width: 33%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -625,7 +627,7 @@
                                 <td
                                     style="
                                         width: 34%;
-                                        height: 24px;
+                                        height: 18px;
                                         text-align: center;
                                     "
                                 >
@@ -714,7 +716,7 @@
         <div class="page" style="padding: 8px">
             <table
                 class="w-full border"
-                style="font-size: 11px; line-height: 1.2"
+                style="font-size: 9px; line-height: 1.15"
             >
                 <thead>
                     <tr>
@@ -812,7 +814,7 @@
                     <tr class="bg-gray">
                         <td class="border"></td>
                         <td
-                            class="bold text-10 border uppercase"
+                            class="bold text-9 border uppercase"
                             style="padding: 2px"
                         >
                             IN THE PAST 6 MONTHS HAVE YOU:
@@ -858,7 +860,7 @@
                     <tr class="bg-gray">
                         <td class="border"></td>
                         <td
-                            class="bold text-10 border uppercase"
+                            class="bold text-9 border uppercase"
                             style="padding: 2px"
                         >
                             IN THE PAST 12 MONTHS HAVE YOU:
@@ -928,7 +930,7 @@
                     <tr class="bg-gray">
                         <td class="border"></td>
                         <td
-                            class="bold text-10 border uppercase"
+                            class="bold text-9 border uppercase"
                             style="padding: 2px"
                         >
                             HAVE YOU EVER:
@@ -983,7 +985,7 @@
                     <tr class="bg-gray">
                         <td class="border"></td>
                         <td
-                            class="bold text-10 border uppercase"
+                            class="bold text-9 border uppercase"
                             style="padding: 2px"
                         >
                             HAD ANY OF THE FOLLOWING:
@@ -1044,7 +1046,7 @@
                     <tr class="bg-gray">
                         <td class="border"></td>
                         <td
-                            class="bold text-10 border text-center uppercase"
+                            class="bold text-9 border text-center uppercase"
                             style="padding: 2px"
                         >
                             FOR FEMALE DONORS ONLY:
@@ -1095,140 +1097,13 @@
             </table>
         </div>
 
-        {{-- CUE Section --}}
-        <div class="page" style="padding: 8px">
-            <div
-                style="
-                    border-top: 2px dashed #000;
-                    margin-top: 8px;
-                    margin-bottom: 12px;
-                    position: relative;
-                "
-            >
-                <span
-                    style="
-                        position: absolute;
-                        top: -16px;
-                        left: 0;
-                        background: #fff;
-                        padding-right: 8px;
-                        font-size: 20px;
-                    "
-                    >&#9998;</span
-                >
-            </div>
-
-            <div class="border-2 p-2">
-                <h2 class="bold mb-1 text-center text-base">
-                    CONFIDENTIAL UNIT EXCLUSION (CUE)
-                </h2>
-
-                <p class="mb-2 text-justify text-xs leading-tight">
-                    Please <b>MARK</b> one of the boxes below. If at one point
-                    <b>DURING</b> or <b>AFTER</b> donating blood is unsure of
-                    your initial answer, please inform our Blood Service Staff
-                    immediately. If you have already left the blood donation
-                    venue, contact the PRC Headquarters at telephone number
-                    (02)790-2300 or any Philippine Red Cross Office nearest you.
-                    <span class="bold text-xs" style="color: #c00"
-                        >(046) 402-6267 / 0926-685-9594</span
-                    >
-                </p>
-
-                <p class="bold mb-3 text-center text-xs underline">
-                    MARK ONE BOX ONLY. YOUR RESPONSE WILL BE STRICTLY
-                    CONFIDENTIAL.
-                </p>
-
-                <table class="mb-2">
-                    <tr>
-                        <td
-                            style="width: 150px"
-                            class="bold text-right text-xs"
-                            style="padding-right: 8px"
-                        >
-                            I BELIEVE THAT MY<br />BLOOD IS:
-                        </td>
-                        <td style="padding: 0 8px; text-align: center">
-                            <div class="text-10 bold">
-                                SAFE<br /><span style="font-weight: normal"
-                                    >for transfusion</span
-                                >
-                            </div>
-                        </td>
-                        <td>
-                            <div
-                                class="checkbox h-8 w-8"
-                                style="width: 32px; height: 32px"
-                            ></div>
-                        </td>
-                        <td style="padding: 0 8px; text-align: center">
-                            <div class="text-10 bold">
-                                NOT SAFE<br /><span style="font-weight: normal"
-                                    >for transfusion</span
-                                >
-                            </div>
-                        </td>
-                        <td>
-                            <div
-                                class="checkbox h-8 w-8"
-                                style="width: 32px; height: 32px"
-                            ></div>
-                        </td>
-                        <td style="padding-left: 24px">
-                            <table style="width: 250px">
-                                <tr>
-                                    <td
-                                        colspan="2"
-                                        class="bold border-2 py-1 text-center"
-                                        style="background: #f5f5f5"
-                                    >
-                                        BBIS DONATION ID
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td
-                                        style="
-                                            white-space: nowrap;
-                                            padding-right: 8px;
-                                        "
-                                    >
-                                        DATE OF DONATION:
-                                    </td>
-                                    <td class="border-b"></td>
-                                </tr>
-                                <tr>
-                                    <td
-                                        style="
-                                            white-space: nowrap;
-                                            padding-right: 8px;
-                                        "
-                                    >
-                                        PLACE OF DONATION:
-                                    </td>
-                                    <td class="border-b"></td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-
-                <p class="text-10 bold mt-3 text-center">
-                    *THANK YOU FOR DONATING YOUR BLOOD AND FOR HELPING THE
-                    PHILIPPINE RED CROSS MAINTAIN A SAFE BLOOD SUPPLY*
-                </p>
-            </div>
-        </div>
-
-        <div style="page-break-before: always"></div>
-
-        {{-- PAGE 2: III. DONOR'S DECLARATION --}}
-        <div class="page" style="padding: 16px">
-            <div class="bold mb-2" style="font-size: 13px">
+        {{-- DONOR'S DECLARATION --}}
+        <div class="page" style="padding: 0 0 0 8px">
+            <div class="bold mb-2" style="font-size: 11px">
                 III. DONOR&#8217;S DECLARATION
             </div>
 
-            <table style="font-size: 11px">
+            <table style="font-size: 9px">
                 <tr>
                     <td style="padding: 0 0 4px 0">
                         <table>
@@ -2026,6 +1901,130 @@
                 "
             >
                 PRC-NBS DONOR FORM 321-E Revised Sep2025
+            </div>
+        </div>
+
+        {{-- CUE Section --}}
+        <div class="page" style="padding: 0">
+            <div
+                style="
+                    border-top: 1.5px dashed #000;
+                    margin-top: 4px;
+                    margin-bottom: 6px;
+                    position: relative;
+                "
+            >
+                <span
+                    style="
+                        position: absolute;
+                        top: -12px;
+                        left: 0;
+                        background: #fff;
+                        padding-right: 6px;
+                        font-size: 16px;
+                    "
+                    >&#9998;</span
+                >
+            </div>
+
+            <div class="border-2 p-2">
+                <div class="bold mb-1 text-center text-sm">
+                    CONFIDENTIAL UNIT EXCLUSION (CUE)
+                </div>
+
+                <p class="mb-2 text-justify text-10 leading-tight">
+                    Please <b>MARK</b> one of the boxes below. If at one point
+                    <b>DURING</b> or <b>AFTER</b> donating blood is unsure of
+                    your initial answer, please inform our Blood Service Staff
+                    immediately. If you have already left the blood donation
+                    venue, contact the PRC Headquarters at telephone number
+                    (02)790-2300 or any Philippine Red Cross Office nearest you.
+                    <span class="bold text-xs" style="color: #c00"
+                        >(046) 402-6267 / 0926-685-9594</span
+                    >
+                </p>
+
+                <p class="bold mb-3 text-center text-xs underline">
+                    MARK ONE BOX ONLY. YOUR RESPONSE WILL BE STRICTLY
+                    CONFIDENTIAL.
+                </p>
+
+                <table class="mb-2">
+                    <tr>
+                        <td
+                            class="bold text-right text-10"
+                            style="width: 120px; padding-right: 4px"
+                        >
+                            I BELIEVE THAT MY<br />BLOOD IS:
+                        </td>
+                        <td style="padding: 0 4px; text-align: center">
+                            <div class="text-9 bold">
+                                SAFE<br /><span style="font-weight: normal; font-size: 7.5px;"
+                                    >for transfusion</span
+                                >
+                            </div>
+                        </td>
+                        <td>
+                            <div
+                                class="checkbox h-8 w-8"
+                                style="width: 18px; height: 18px"
+                            ></div>
+                        </td>
+                        <td style="padding: 0 4px; text-align: center">
+                            <div class="text-9 bold">
+                                NOT SAFE<br /><span style="font-weight: normal; font-size: 7.5px;"
+                                    >for transfusion</span
+                                >
+                            </div>
+                        </td>
+                        <td>
+                            <div
+                                class="checkbox h-8 w-8"
+                                style="width: 18px; height: 18px"
+                            ></div>
+                        </td>
+                        <td style="padding-left: 12px">
+                            <table style="width: 200px">
+                                <tr>
+                                    <td
+                                        colspan="2"
+                                        class="bold border-2 py-1 text-center"
+                                        style="background: #f5f5f5"
+                                    >
+                                        BBIS DONATION ID
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="
+                                            white-space: nowrap;
+                                            padding-right: 8px;
+                                        "
+                                    >
+                                        DATE OF DONATION:
+                                    </td>
+                                    <td class="border-b"></td>
+                                </tr>
+                                <tr>
+                                    <td
+                                        style="
+                                            white-space: nowrap;
+                                            padding-right: 8px;
+                                        "
+                                    >
+                                        PLACE OF DONATION:
+                                    </td>
+                                    <td class="border-b"></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <p class="text-10 bold mt-3 text-center">
+                    *THANK YOU FOR DONATING YOUR BLOOD AND FOR HELPING THE
+                    PHILIPPINE RED CROSS MAINTAIN A SAFE BLOOD SUPPLY*
+                </p>
             </div>
         </div>
     </body>

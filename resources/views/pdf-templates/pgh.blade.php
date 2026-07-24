@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        @page { margin: 0.4in 0.6in 0.4in 0.5in; }
-        body { background: #fff; color: #000; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; margin: 0; padding: 0; }
+        @page { size: 8.5in 13in; margin: 0.3in 0.4in; }
+        body { background: #fff; color: #000; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9px; margin: 0; padding: 0; }
 
         .page {
             background: #fff;
@@ -22,14 +22,14 @@
         }
 
         /* Typography & Utility classes */
-        .text-7 { font-size: 7.5px; }
-        .text-8 { font-size: 8px; }
-        .text-9 { font-size: 9px; }
-        .text-10 { font-size: 10px; }
-        .text-11 { font-size: 11px; }
-        .text-12 { font-size: 12px; }
-        .text-14 { font-size: 14px; }
-        .text-17 { font-size: 17px; }
+        .text-7 { font-size: 7px; }
+        .text-8 { font-size: 7.5px; }
+        .text-9 { font-size: 8px; }
+        .text-10 { font-size: 9px; }
+        .text-11 { font-size: 10px; }
+        .text-12 { font-size: 11px; }
+        .text-14 { font-size: 12px; }
+        .text-17 { font-size: 14px; }
 
         .bold { font-weight: bold; }
         .bolder { font-weight: 800; }
@@ -53,31 +53,31 @@
         .w-full { width: 100%; }
 
         /* Spacing utilities */
-        .mt-1 { margin-top: 4px; }
-        .mt-2 { margin-top: 8px; }
-        .mt-3 { margin-top: 12px; }
-        .mt-4 { margin-top: 16px; }
-        .mt-5 { margin-top: 20px; }
-        .mt-6 { margin-top: 24px; }
-        .mb-1 { margin-bottom: 4px; }
-        .mb-2 { margin-bottom: 8px; }
-        .mb-3 { margin-bottom: 12px; }
-        .mb-4 { margin-bottom: 16px; }
+        .mt-1 { margin-top: 3px; }
+        .mt-2 { margin-top: 5px; }
+        .mt-3 { margin-top: 8px; }
+        .mt-4 { margin-top: 10px; }
+        .mt-5 { margin-top: 14px; }
+        .mt-6 { margin-top: 18px; }
+        .mb-1 { margin-bottom: 3px; }
+        .mb-2 { margin-bottom: 5px; }
+        .mb-3 { margin-bottom: 8px; }
+        .mb-4 { margin-bottom: 10px; }
         .mb-0 { margin-bottom: 0; }
-        .ml-1 { margin-left: 4px; }
-        .ml-2 { margin-left: 8px; }
-        .ml-4 { margin-left: 16px; }
-        .ml-16 { margin-left: 64px; }
-        .mr-4 { margin-right: 16px; }
+        .ml-1 { margin-left: 3px; }
+        .ml-2 { margin-left: 5px; }
+        .ml-4 { margin-left: 10px; }
+        .ml-16 { margin-left: 40px; }
+        .mr-4 { margin-right: 10px; }
 
-        .pb-1 { padding-bottom: 4px; }
-        .pt-1 { padding-top: 4px; }
-        .pt-2 { padding-top: 8px; }
-        .pl-2 { padding-left: 8px; }
-        .pr-2 { padding-right: 8px; }
-        .py-1 { padding-top: 4px; padding-bottom: 4px; }
-        .py-2 { padding-top: 8px; padding-bottom: 8px; }
-        .px-2 { padding-left: 8px; padding-right: 8px; }
+        .pb-1 { padding-bottom: 3px; }
+        .pt-1 { padding-top: 3px; }
+        .pt-2 { padding-top: 5px; }
+        .pl-2 { padding-left: 5px; }
+        .pr-2 { padding-right: 5px; }
+        .py-1 { padding-top: 3px; padding-bottom: 3px; }
+        .py-2 { padding-top: 5px; padding-bottom: 5px; }
+        .px-2 { padding-left: 5px; padding-right: 5px; }
 
         .leading-tight { line-height: 1.2; }
         .leading-snug { line-height: 1.4; }
@@ -88,13 +88,13 @@
         td, th { vertical-align: top; padding: 0; }
 
         /* Form Specific UI elements */
-        .checkbox { display: inline-block; width: 11px; height: 11px; border: 1px solid #000; vertical-align: middle; margin-right: 4px; }
-        .circle-box { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1px solid #000; vertical-align: middle; text-align: center; }
+        .checkbox { display: inline-block; width: 9px; height: 9px; border: 1px solid #000; vertical-align: middle; margin-right: 3px; }
+        .circle-box { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 1px solid #000; vertical-align: middle; text-align: center; }
         .fill-line { border-bottom: 1px solid #000; display: inline-block; }
         .sub-label { display: block; font-size: 7.5px; font-style: italic; text-align: center; margin-top: 2px; color: #333; }
 
         /* Questionnaire table structure */
-        .q-table td { padding: 3px 2px; vertical-align: middle; }
+        .q-table td { padding: 2px 1.5px; vertical-align: middle; }
         .q-num { font-weight: bold; width: 20px; vertical-align: top; padding-top: 3px; }
         .q-text { padding-left: 4px; line-height: 1.3; }
         .q-header { background-color: #f2f2f2; border: 1px solid #000; }

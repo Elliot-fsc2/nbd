@@ -5,7 +5,7 @@
     <style>
         /* Define standardized print parameters to fix the right margin clipping issue */
         @page {
-            size: letter;
+            size: 8.5in 13in;
             margin: 0.4in 0.5in;
         }
 

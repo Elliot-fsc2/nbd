@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DonorOutcomeStatus;
 use App\Enums\DonorStatus;
 use App\Enums\HouseOfHeroes;
 use App\Http\Controllers\Controller;
@@ -44,6 +45,10 @@ class DonorController extends Controller
             $query->where('data->house_heroes', $house);
         }
 
+        if ($outcomeStatus = $request->get('outcome_status')) {
+            $query->where('outcome_status', $outcomeStatus);
+        }
+
         if ($dateFrom = $request->get('date_from')) {
             $query->whereDate('created_at', '>=', $dateFrom);
         }
@@ -66,6 +71,11 @@ class DonorController extends Controller
             'label' => ucwords(str_replace('_', ' ', $case->value)),
         ]);
 
+        $outcomeStatuses = collect(DonorOutcomeStatus::cases())->map(fn ($case) => [
+            'value' => $case->value,
+            'label' => ucwords(str_replace('_', ' ', $case->value)),
+        ]);
+
         $houseOptions = collect(HouseOfHeroes::cases())->map(fn ($case) => [
             'value' => $case->value,
             'label' => $case->name,
@@ -82,6 +92,7 @@ class DonorController extends Controller
                     'email' => $donor->email,
                     'contact_number' => $donor->contact_number,
                     'status' => $donor->status?->value,
+                    'outcome_status' => $donor->outcome_status?->value,
                     'hospital_name' => $donor->assignedHospital?->name,
                     'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
@@ -90,8 +101,9 @@ class DonorController extends Controller
             }),
             'hospitals' => $hospitals,
             'statuses' => $statuses,
+            'outcomeStatuses' => $outcomeStatuses,
             'houseOptions' => $houseOptions,
-            'filters' => $request->only(['search', 'status', 'hospital_id', 'house', 'date_from', 'date_to']),
+            'filters' => $request->only(['search', 'status', 'outcome_status', 'hospital_id', 'house', 'date_from', 'date_to']),
         ]);
     }
 
@@ -110,6 +122,10 @@ class DonorController extends Controller
 
         if ($status = $request->get('status')) {
             $query->where('status', $status);
+        }
+
+        if ($outcomeStatus = $request->get('outcome_status')) {
+            $query->where('outcome_status', $outcomeStatus);
         }
 
         if ($hospitalId = $request->get('hospital_id')) {

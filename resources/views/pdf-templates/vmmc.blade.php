@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        @page { size: 8.5in 13in; margin: 15px 20px; }
         * { box-sizing: border-box; }
         body { background: #fff; color: #000; font-family: sans-serif; font-size: 11px; padding: 20px 24px; }
         .page { width: 100%; max-width: 950px; margin: 0 auto; padding: 0; position: relative; }
