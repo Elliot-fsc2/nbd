@@ -299,6 +299,34 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                 </div>
                             </div>
                             <Select key={`hospital-${hospitalId}`} value={hospitalId} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setHospitalId(val);
+                                router.visit(staff.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        hospital_id: val || undefined,
+                                        status: statusFilter || undefined,
+                                        outcome_status: outcomeFilter || undefined,
+                                        house: houseFilter || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Hospital" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Hospitals</SelectItem>
+                                    {hospitals.map((hospital) => (
+                                        <SelectItem key={hospital.id} value={String(hospital.id)}>
+                                            {hospital.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Select key={`status-${statusFilter}`} value={statusFilter} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setStatusFilter(val);
