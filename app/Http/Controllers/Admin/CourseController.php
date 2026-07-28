@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,6 +30,8 @@ class CourseController extends Controller
 
         Course::create($validated);
 
+        Cache::forget('courses');
+
         return redirect()->route('admin.courses.index')->with('success', 'Course created.');
     }
 
@@ -41,12 +44,16 @@ class CourseController extends Controller
 
         $course->update($validated);
 
+        Cache::forget('courses');
+
         return redirect()->route('admin.courses.index')->with('success', 'Course updated.');
     }
 
     public function destroy(Course $course): RedirectResponse
     {
         $course->delete();
+
+        Cache::forget('courses');
 
         return redirect()->route('admin.courses.index')->with('success', 'Course deleted.');
     }
