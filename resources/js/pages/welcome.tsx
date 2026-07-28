@@ -202,6 +202,13 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                         message: 'Representative full name is required',
                     });
                 }
+                if (!val.course_id) {
+                    ctx.addIssue({
+                        code: 'custom',
+                        path: ['course_id'],
+                        message: 'Course is required',
+                    });
+                }
             }
             if (!isRepresentative && !val.id_number) {
                 ctx.addIssue({
@@ -590,7 +597,10 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="course_id_rep">
-                                                Course
+                                                Course{' '}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
                                                 value={data.course_id}
@@ -615,6 +625,13 @@ export default function Welcome({ courses, houseOfHeroes }: WelcomeProps) {
                                                     ))}
                                                 </SelectContent>
                                             </Select>
+                                            {(zodErrors.course_id ||
+                                                errors.course_id) && (
+                                                <p className="text-xs text-destructive">
+                                                    {zodErrors.course_id ||
+                                                        errors.course_id}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
