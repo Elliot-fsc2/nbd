@@ -235,13 +235,14 @@ class QueueController extends Controller
             $prefix = strtoupper(substr($event->name, 0, 3));
         }
 
-        $lastQueueNumber = EventRegistration::where('event_id', $event->id)
+        $lastNumber = EventRegistration::where('event_id', $event->id)
             ->where('hospital_id', $hospitalId)
             ->whereNotNull('queue_number')
-            ->orderByRaw('CAST(SUBSTRING(queue_number, -3) AS UNSIGNED) DESC')
-            ->value('queue_number');
+            ->pluck('queue_number')
+            ->map(fn (string $queueNumber) => (int) substr($queueNumber, -3))
+            ->max();
 
-        $nextNumber = $lastQueueNumber ? intval(substr($lastQueueNumber, -3)) + 1 : 1;
+        $nextNumber = $lastNumber ? $lastNumber + 1 : 1;
 
         return $prefix.'-'.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
