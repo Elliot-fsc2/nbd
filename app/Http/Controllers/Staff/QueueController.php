@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Enums\DonorOutcomeStatus;
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Mail\QueueCalledMail;
 use App\Models\BloodDonationEvent;
 use App\Models\Donor;
 use App\Models\EventRegistration;
+use App\Models\Hospital;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,14 +36,21 @@ class QueueController extends Controller
         $next = $event->registrations()
             ->with('donor', 'hospital')
             ->where('status', 'checked_in')
-            ->orderBy('queue_number')
+            ->orderBy('checked_in_at')
             ->take(3)
             ->get();
 
         $waiting = $event->registrations()
             ->with('donor', 'hospital')
             ->where('status', 'checked_in')
-            ->orderBy('queue_number')
+            ->orderBy('checked_in_at')
+            ->get();
+
+        $recentlyCalled = $event->registrations()
+            ->with('donor', 'hospital')
+            ->whereNotNull('called_at')
+            ->orderByDesc('called_at')
+            ->take(6)
             ->get();
 
         return Inertia::render('staff/queue/display', [
@@ -49,6 +58,7 @@ class QueueController extends Controller
             'current' => $current,
             'next' => $next,
             'waiting' => $waiting,
+            'recently_called' => $recentlyCalled,
         ]);
     }
 
@@ -62,7 +72,7 @@ class QueueController extends Controller
         $waiting = $event->registrations()
             ->with('donor', 'hospital')
             ->where('status', 'checked_in')
-            ->orderBy('queue_number')
+            ->orderBy('checked_in_at')
             ->take(100)
             ->get();
 
@@ -79,11 +89,18 @@ class QueueController extends Controller
 
         $completed = $completedQuery->latest()->take(50)->get();
 
+        $nextNumbers = [];
+        foreach (Hospital::orderBy('name')->get() as $hospital) {
+            $nextNumbers[(string) $hospital->id] = $this->nextQueueNumber($event, $hospital->id);
+        }
+        $nextNumbers['default'] = $this->nextQueueNumber($event, null);
+
         return Inertia::render('staff/queue/event-queue', [
             'event' => $event,
             'current' => $current,
             'waiting' => $waiting,
             'completed' => $completed,
+            'next_numbers' => $nextNumbers,
         ]);
     }
 
@@ -91,6 +108,7 @@ class QueueController extends Controller
     {
         $validated = $request->validate([
             'donor_id' => ['required', 'integer', 'exists:donors,id'],
+            'queue_number' => ['nullable', 'string', 'max:20'],
         ]);
 
         $donor = Donor::findOrFail($validated['donor_id']);
@@ -102,7 +120,7 @@ class QueueController extends Controller
         if ($existingRegistration) {
             if ($donor->outcome_status === DonorOutcomeStatus::Rescheduled) {
                 $existingRegistration->update(['status' => 'registered']);
-            } elseif ($existingRegistration->status !== 'registered') {
+            } elseif ($existingRegistration->status !== RegistrationStatus::Registered) {
                 $error = 'Donor is already checked in for this event.';
 
                 return $request->wantsJson()
@@ -111,13 +129,24 @@ class QueueController extends Controller
             }
         }
 
-        $lastQueueNumber = EventRegistration::where('event_id', $event->id)
-            ->whereNotNull('queue_number')
-            ->orderBy('queue_number', 'desc')
-            ->value('queue_number');
+        $queueNumber = $validated['queue_number'] ?? null;
 
-        $nextNumber = $lastQueueNumber ? intval(substr($lastQueueNumber, -3)) + 1 : 1;
-        $queueNumber = strtoupper(substr($event->name, 0, 3)).'-'.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        if ($queueNumber) {
+            $duplicate = EventRegistration::where('event_id', $event->id)
+                ->where('queue_number', $queueNumber)
+                ->when($existingRegistration, fn ($q) => $q->where('id', '!=', $existingRegistration->id))
+                ->exists();
+
+            if ($duplicate) {
+                $error = "Queue number {$queueNumber} is already in use.";
+
+                return $request->wantsJson()
+                    ? response()->json(['error' => $error], 422)
+                    : back()->withErrors(['queue_number' => $error]);
+            }
+        } else {
+            $queueNumber = $this->nextQueueNumber($event, $donor->assigned_hospital_id);
+        }
 
         if ($existingRegistration) {
             $existingRegistration->update([
@@ -196,5 +225,24 @@ class QueueController extends Controller
         ]);
 
         return back()->with('success', 'Donor skipped.');
+    }
+
+    private function nextQueueNumber(BloodDonationEvent $event, ?int $hospitalId): string
+    {
+        if ($hospitalId) {
+            $prefix = strtoupper(Hospital::find($hospitalId)?->code ?: substr($event->name, 0, 3));
+        } else {
+            $prefix = strtoupper(substr($event->name, 0, 3));
+        }
+
+        $lastQueueNumber = EventRegistration::where('event_id', $event->id)
+            ->where('hospital_id', $hospitalId)
+            ->whereNotNull('queue_number')
+            ->orderByRaw('CAST(SUBSTRING(queue_number, -3) AS UNSIGNED) DESC')
+            ->value('queue_number');
+
+        $nextNumber = $lastQueueNumber ? intval(substr($lastQueueNumber, -3)) + 1 : 1;
+
+        return $prefix.'-'.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 }

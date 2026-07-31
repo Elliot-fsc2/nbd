@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Enums\DonorOutcomeStatus;
 use App\Enums\DonorStatus;
 use App\Enums\HouseOfHeroes;
+use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Donor;
@@ -183,18 +184,36 @@ class DonorController extends Controller
             return response()->json([]);
         }
 
-        $donors = Donor::where('id_number', 'like', "%{$query}%")
+        $eventId = $request->input('event_id');
+
+        $donors = Donor::with('assignedHospital')
+            ->when($eventId, fn ($q) => $q->with(['eventRegistrations' => fn ($qr) => $qr->where('event_id', $eventId)]))
+            ->where('id_number', 'like', "%{$query}%")
             ->orWhere('full_name', 'like', "%{$query}%")
             ->orWhere('data->representative_full_name', 'like', "%{$query}%")
             ->limit(10)
             ->get()
-            ->map(fn (Donor $donor) => [
-                'id' => $donor->id,
-                'full_name' => $donor->full_name,
-                'id_number' => $donor->id_number,
-                'email' => $donor->email,
-                'tracking_code' => $donor->tracking_code,
-            ]);
+            ->map(function (Donor $donor) use ($eventId) {
+                $registration = $donor->eventRegistrations->first();
+
+                return [
+                    'id' => $donor->id,
+                    'full_name' => $donor->full_name,
+                    'id_number' => $donor->id_number,
+                    'email' => $donor->email,
+                    'tracking_code' => $donor->tracking_code,
+                    'assigned_hospital_id' => $donor->assigned_hospital_id,
+                    'hospital' => $donor->assignedHospital ? [
+                        'id' => $donor->assignedHospital->id,
+                        'name' => $donor->assignedHospital->name,
+                        'code' => $donor->assignedHospital->code,
+                    ] : null,
+                    'already_checked_in' => $eventId
+                        && $registration
+                        && $registration->status !== RegistrationStatus::Registered
+                        && $donor->outcome_status !== DonorOutcomeStatus::Rescheduled,
+                ];
+            });
 
         return response()->json($donors);
     }

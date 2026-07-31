@@ -38,6 +38,7 @@ interface DisplayProps {
     current: EventRegistration[];
     next: EventRegistration[];
     waiting: EventRegistration[];
+    recently_called: EventRegistration[];
 }
 
 function chime() {
@@ -57,10 +58,10 @@ function chime() {
     }
 }
 
-export default function Display({ event, current, next, waiting }: DisplayProps) {
+export default function Display({ event, current, next, waiting, recently_called: recentlyCalled }: DisplayProps) {
     const prevIds = useRef<string>('');
 
-    usePoll(5000, { only: ['current', 'next', 'waiting'] });
+    usePoll(5000, { only: ['current', 'next', 'waiting', 'recently_called'] });
 
     useEffect(() => {
         const ids = current.map((r) => r.id).sort().join(',');
@@ -152,6 +153,30 @@ export default function Display({ event, current, next, waiting }: DisplayProps)
                                             <p className="font-semibold text-blue-200/70 text-[clamp(0.625rem,1.8vw,1.75rem)]">
                                                 {reg.hospital.name}
                                             </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {recentlyCalled.length > 0 && (
+                        <div className="rounded-2xl md:rounded-3xl border border-blue-400/20 bg-blue-900/30 px-[clamp(1rem,2.5vw,2rem)] py-[clamp(0.5rem,1vw,0.875rem)]">
+                            <p className="mb-[clamp(0.25rem,0.75vw,0.75rem)] text-center font-bold tracking-wider uppercase text-blue-300/80 text-[clamp(0.75rem,1.8vw,2.25rem)]">
+                                Recently Called
+                            </p>
+                            <div className="flex flex-row flex-wrap gap-[clamp(0.5rem,1vw,1rem)] justify-center">
+                                {recentlyCalled.map((reg) => (
+                                    <div key={reg.id} className="flex items-baseline gap-2 rounded-xl border border-blue-400/15 bg-blue-800/30 px-[clamp(0.75rem,2vw,1.5rem)] py-[clamp(0.25rem,0.75vw,0.625rem)] text-center min-w-[130px] max-w-full">
+                                        <span className="font-black text-blue-200/90 text-[clamp(1rem,3vw,2.5rem)]">
+                                            #{reg.queue_number?.slice(-3)}
+                                        </span>
+                                        <span className="font-semibold text-white/90 text-[clamp(0.625rem,2vw,1.75rem)] truncate">
+                                            {reg.donor.full_name}
+                                        </span>
+                                        {reg.hospital && (
+                                            <span className="font-semibold text-blue-200/60 text-[clamp(0.5rem,1.6vw,1.5rem)]">
+                                                {reg.hospital.name}
+                                            </span>
                                         )}
                                     </div>
                                 ))}

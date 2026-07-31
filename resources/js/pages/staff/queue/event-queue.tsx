@@ -19,6 +19,9 @@ interface Donor {
     id_number: string | null;
     email: string;
     tracking_code: string;
+    assigned_hospital_id: number | null;
+    hospital: Hospital | null;
+    already_checked_in: boolean;
 }
 
 interface Hospital {
@@ -58,9 +61,10 @@ interface EventQueueProps {
     current: EventRegistration[];
     waiting: EventRegistration[];
     completed: EventRegistration[];
+    next_numbers: Record<string, string>;
 }
 
-export default function EventQueue({ event, current, waiting, completed }: EventQueueProps) {
+export default function EventQueue({ event, current, waiting, completed, next_numbers: nextNumbers }: EventQueueProps) {
     usePoll(5000, { only: ['current', 'waiting', 'completed'] });
 
     const { errors, flash } = usePage().props as {
@@ -75,6 +79,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Donor[]>([]);
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+    const [queueNumber, setQueueNumber] = useState('');
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -92,7 +97,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
         debounceRef.current = setTimeout(async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/staff/donors/search?q=${encodeURIComponent(query)}`);
+                const res = await fetch(`/staff/donors/search?q=${encodeURIComponent(query)}&event_id=${event.id}`);
                 const data: Donor[] = await res.json();
                 setResults(data);
                 setOpen(data.length > 0);
@@ -133,8 +138,17 @@ export default function EventQueue({ event, current, waiting, completed }: Event
     }, []);
 
     function selectDonor(donor: Donor) {
-        setSelectedDonor(donor);
         setQuery(donor.full_name);
+
+        if (donor.already_checked_in) {
+            toast.error('Donor is already checked in for this event.');
+            setOpen(false);
+            return;
+        }
+
+        setSelectedDonor(donor);
+        const suggested = nextNumbers[String(donor.assigned_hospital_id ?? 'default')] ?? nextNumbers.default ?? '';
+        setQueueNumber(suggested);
         setOpen(false);
     }
 
@@ -155,6 +169,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
 
         router.post(staff.events.checkin(event.id)?.url || `/staff/events/${event.id}/checkin`, {
             donor_id: selectedDonor.id,
+            queue_number: queueNumber.trim() || undefined,
         }, {
             preserveScroll: true,
             onSuccess: (page) => {
@@ -164,6 +179,7 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                 setSelectedDonor(null);
                 setQuery('');
                 setResults([]);
+                setQueueNumber('');
                 setShowReceipt(false);
                 setCheckingIn(false);
 
@@ -355,9 +371,17 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                                                     className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-accent"
                                                 >
                                                     <span className="font-medium">{donor.full_name}</span>
+                                                    {donor.already_checked_in && (
+                                                        <Badge variant="secondary" className="ml-1">Checked in</Badge>
+                                                    )}
                                                     <span className="text-xs text-muted-foreground">
                                                         {donor.id_number ?? 'N/A'} &middot; {donor.email}
                                                     </span>
+                                                    {donor.hospital && (
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {donor.hospital.name}
+                                                        </span>
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -425,6 +449,18 @@ export default function EventQueue({ event, current, waiting, completed }: Event
                             <p className="text-xs text-muted-foreground uppercase tracking-wider">{receiptData?.event_name}</p>
                         </div>
                         <div className="border-b border-dashed w-full" />
+                        <div className="w-full space-y-1">
+                            <p className="text-xs text-muted-foreground">Queue Number</p>
+                            <Input
+                                value={queueNumber}
+                                onChange={(e) => setQueueNumber(e.target.value)}
+                                placeholder="e.g. PGH-001"
+                                disabled={checkingIn}
+                            />
+                            {errors.queue_number && (
+                                <p className="text-sm text-destructive">{errors.queue_number}</p>
+                            )}
+                        </div>
                         <div className="text-center">
                             <p className="text-xs text-muted-foreground">Donor</p>
                             <p className="text-xl font-semibold">{receiptData?.donor_name}</p>

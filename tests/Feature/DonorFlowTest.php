@@ -1,9 +1,11 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\BloodDonationEvent;
 use App\Models\Course;
 use App\Models\Department;
 use App\Models\Donor;
+use App\Models\EventRegistration;
 use App\Models\Hospital;
 use App\Models\User;
 use App\Services\PdfGenerationService;
@@ -282,4 +284,134 @@ test('staff donors export includes walk-in column', function () {
     expect($walkInRow)->not->toBeNull()
         ->and($walkInColumn)->not->toBe(false)
         ->and($walkInRow[$walkInColumn])->toBe('Yes');
+});
+
+test('donor search flags donors already checked in for the event', function () {
+    seededHospital();
+    actingAsStaff();
+
+    $hospital = Hospital::first();
+    $event = BloodDonationEvent::create([
+        'name' => 'Queue Search Event',
+        'event_date' => now()->toDateString(),
+        'status' => 'ongoing',
+    ]);
+
+    $checkedInDonor = Donor::create([
+        'tracking_code' => 'Q-CHECKEDIN',
+        'donor_type' => 'student',
+        'id_number' => 'Q-001',
+        'full_name' => 'Queue Checked In',
+        'email' => 'qchecked@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'checked_in',
+        'data' => ['course_id' => '23'],
+    ]);
+    EventRegistration::create([
+        'donor_id' => $checkedInDonor->id,
+        'event_id' => $event->id,
+        'hospital_id' => $hospital->id,
+        'queue_number' => 'EACMED-001',
+        'status' => 'checked_in',
+    ]);
+
+    $preRegisteredDonor = Donor::create([
+        'tracking_code' => 'Q-PREREG',
+        'donor_type' => 'student',
+        'id_number' => 'Q-002',
+        'full_name' => 'Queue Pre Registered',
+        'email' => 'qprereg@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'registered',
+        'data' => ['course_id' => '23'],
+    ]);
+    EventRegistration::create([
+        'donor_id' => $preRegisteredDonor->id,
+        'event_id' => $event->id,
+        'hospital_id' => $hospital->id,
+        'status' => 'registered',
+    ]);
+
+    $freshDonor = Donor::create([
+        'tracking_code' => 'Q-FRESH',
+        'donor_type' => 'student',
+        'id_number' => 'Q-003',
+        'full_name' => 'Queue Fresh Donor',
+        'email' => 'qfresh@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'registered',
+        'data' => ['course_id' => '23'],
+    ]);
+
+    $response = $this->getJson(route('staff.donors.search', ['q' => 'Queue', 'event_id' => $event->id]));
+
+    $response->assertOk();
+    $donors = collect($response->json());
+
+    expect($donors->firstWhere('id', $checkedInDonor->id)['already_checked_in'])->toBeTrue()
+        ->and($donors->firstWhere('id', $preRegisteredDonor->id)['already_checked_in'])->toBeFalse()
+        ->and($donors->firstWhere('id', $freshDonor->id)['already_checked_in'])->toBeFalse();
+});
+
+test('donor search does not flag donors when event_id is omitted', function () {
+    seededHospital();
+    actingAsStaff();
+
+    $hospital = Hospital::first();
+    $donor = Donor::create([
+        'tracking_code' => 'Q-NOEVENT',
+        'donor_type' => 'student',
+        'id_number' => 'Q-004',
+        'full_name' => 'Queue No Event',
+        'email' => 'qnoevent@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'checked_in',
+        'data' => ['course_id' => '23'],
+    ]);
+
+    $response = $this->getJson(route('staff.donors.search', ['q' => 'Queue No']));
+
+    $response->assertOk();
+    $donors = collect($response->json());
+
+    expect($donors->firstWhere('id', $donor->id)['already_checked_in'])->toBeFalse();
+});
+
+test('pre-registered donor can be checked in via the queue', function () {
+    seededHospital();
+    actingAsStaff();
+
+    $hospital = Hospital::first();
+    $event = BloodDonationEvent::create([
+        'name' => 'Pre Reg Check In Event',
+        'event_date' => now()->toDateString(),
+        'status' => 'ongoing',
+    ]);
+
+    $donor = Donor::create([
+        'tracking_code' => 'PREREG-CHECKIN',
+        'donor_type' => 'student',
+        'id_number' => 'Q-005',
+        'full_name' => 'Pre Reg Check In',
+        'email' => 'preregcheckin@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'registered',
+        'data' => ['course_id' => '23'],
+    ]);
+    EventRegistration::create([
+        'donor_id' => $donor->id,
+        'event_id' => $event->id,
+        'hospital_id' => $hospital->id,
+        'status' => 'registered',
+    ]);
+
+    $response = $this->post(route('staff.events.checkin', $event), [
+        'donor_id' => $donor->id,
+    ]);
+
+    $response->assertRedirect();
+    $registration = EventRegistration::where('event_id', $event->id)->where('donor_id', $donor->id)->first();
+
+    expect($registration->status->value)->toBe('checked_in')
+        ->and($registration->queue_number)->toBe('EACMED-001');
 });
