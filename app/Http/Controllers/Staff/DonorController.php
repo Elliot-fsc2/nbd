@@ -135,8 +135,10 @@ class DonorController extends Controller
             'full_name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.\-\']+$/u'],
             'donor_type' => ['required', 'string', 'in:student,representative'],
             'hospital_id' => ['required', 'exists:hospitals,id'],
-            'course_id' => ['nullable', 'string', Rule::requiredIf($request->input('donor_type') === 'student'), 'exists:courses,id'],
-            'house_heroes' => ['nullable', 'string', Rule::requiredIf($request->input('donor_type') === 'student'), Rule::enum(HouseOfHeroes::class)],
+            'id_number' => ['required', 'string', 'max:255'],
+            'representative_full_name' => ['nullable', 'string', 'regex:/^[\pL\s.\-\']*$/u', Rule::requiredIf($request->input('donor_type') === 'representative')],
+            'course_id' => ['required', 'string', 'exists:courses,id'],
+            'house_heroes' => ['required', Rule::enum(HouseOfHeroes::class)],
             'instructor_name' => ['nullable', 'string', 'max:255', 'regex:/^[\pL\pN\s.\-\']*$/u'],
         ]);
 
@@ -144,6 +146,7 @@ class DonorController extends Controller
             'tracking_code' => Str::random(10),
             'donor_type' => $validated['donor_type'],
             'full_name' => $validated['full_name'],
+            'id_number' => $validated['id_number'],
             'email' => '',
             'assigned_hospital_id' => $validated['hospital_id'],
             'is_walk_in' => true,
@@ -151,6 +154,8 @@ class DonorController extends Controller
                 'course_id' => $validated['course_id'] ?? null,
                 'house_heroes' => $validated['house_heroes'] ?? null,
                 'instructor_name' => $validated['instructor_name'] ?? null,
+                'representative_full_name' => $validated['representative_full_name'] ?? null,
+                'id_number' => $validated['id_number'],
             ],
             'status' => DonorStatus::Registered,
         ]);

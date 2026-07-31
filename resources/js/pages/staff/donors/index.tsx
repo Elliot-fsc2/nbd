@@ -240,6 +240,8 @@ function WalkInDonorDialog({
         full_name: '',
         donor_type: 'student',
         hospital_id: '',
+        id_number: '',
+        representative_full_name: '',
         course_id: '',
         house_heroes: '',
         instructor_name: '',
@@ -291,54 +293,74 @@ function WalkInDonorDialog({
                         {errors.donor_type && <p className="text-sm text-destructive">{errors.donor_type}</p>}
                     </div>
 
-                    {isStudent && (
-                        <>
-                            <div className="space-y-2">
-                                <Label htmlFor="course_id">Course</Label>
-                                <Select value={data.course_id} onValueChange={(v) => setData('course_id', v)}>
-                                    <SelectTrigger id="course_id">
-                                        <SelectValue placeholder="Select course..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {courses.map((course) => (
-                                            <SelectItem key={course.id} value={String(course.id)}>
-                                                {course.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.course_id && <p className="text-sm text-destructive">{errors.course_id}</p>}
-                            </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="id_number">Student/Employee ID</Label>
+                        <Input
+                            id="id_number"
+                            value={data.id_number}
+                            onChange={(e) => setData('id_number', e.target.value)}
+                            placeholder="e.g. 2024-00123"
+                        />
+                        {errors.id_number && <p className="text-sm text-destructive">{errors.id_number}</p>}
+                    </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="house_heroes">House of Heroes</Label>
-                                <Select value={data.house_heroes} onValueChange={(v) => setData('house_heroes', v)}>
-                                    <SelectTrigger id="house_heroes">
-                                        <SelectValue placeholder="Select house..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {houseOptions.map((house) => (
-                                            <SelectItem key={house.value} value={house.value}>
-                                                {house.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.house_heroes && <p className="text-sm text-destructive">{errors.house_heroes}</p>}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="instructor_name">Instructor's Name</Label>
-                                <Input
-                                    id="instructor_name"
-                                    value={data.instructor_name}
-                                    onChange={(e) => setData('instructor_name', e.target.value)}
-                                    placeholder="Enter instructor's name"
-                                />
-                                {errors.instructor_name && <p className="text-sm text-destructive">{errors.instructor_name}</p>}
-                            </div>
-                        </>
+                    {!isStudent && (
+                        <div className="space-y-2">
+                            <Label htmlFor="representative_full_name">Representative For (Full Name)</Label>
+                            <Input
+                                id="representative_full_name"
+                                value={data.representative_full_name}
+                                onChange={(e) => setData('representative_full_name', e.target.value)}
+                                placeholder="e.g. Juan Dela Cruz"
+                            />
+                            {errors.representative_full_name && <p className="text-sm text-destructive">{errors.representative_full_name}</p>}
+                        </div>
                     )}
+
+                    <div className="space-y-2">
+                        <Label htmlFor="course_id">Course</Label>
+                        <Select value={data.course_id} onValueChange={(v) => setData('course_id', v)}>
+                            <SelectTrigger id="course_id">
+                                <SelectValue placeholder="Select course..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {courses.map((course) => (
+                                    <SelectItem key={course.id} value={String(course.id)}>
+                                        {course.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.course_id && <p className="text-sm text-destructive">{errors.course_id}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="house_heroes">House of Heroes</Label>
+                        <Select value={data.house_heroes} onValueChange={(v) => setData('house_heroes', v)}>
+                            <SelectTrigger id="house_heroes">
+                                <SelectValue placeholder="Select house..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {houseOptions.map((house) => (
+                                    <SelectItem key={house.value} value={house.value}>
+                                        {house.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.house_heroes && <p className="text-sm text-destructive">{errors.house_heroes}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="instructor_name">Instructor's Name</Label>
+                        <Input
+                            id="instructor_name"
+                            value={data.instructor_name}
+                            onChange={(e) => setData('instructor_name', e.target.value)}
+                            placeholder="Enter instructor's name"
+                        />
+                        {errors.instructor_name && <p className="text-sm text-destructive">{errors.instructor_name}</p>}
+                    </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="hospital_id">Hospital Attended</Label>

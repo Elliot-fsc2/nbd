@@ -94,6 +94,7 @@ test('walk-in donor store creates a walk-in donor', function () {
         'full_name' => 'Walkin Test Person',
         'donor_type' => 'student',
         'hospital_id' => (string) $hospital->id,
+        'id_number' => '2024-00123',
         'course_id' => (string) Course::first()->id,
         'house_heroes' => 'makatao',
         'instructor_name' => 'Prof Test',
@@ -103,7 +104,36 @@ test('walk-in donor store creates a walk-in donor', function () {
 
     $donor = Donor::where('full_name', 'Walkin Test Person')->first();
     expect($donor)->not->toBeNull()
-        ->and($donor->is_walk_in)->toBe(true);
+        ->and($donor->is_walk_in)->toBe(true)
+        ->and($donor->id_number)->toBe('2024-00123');
+});
+
+test('walk-in representative store captures representative details', function () {
+    seededHospital();
+    seededCourse();
+    actingAsStaff();
+
+    $hospital = Hospital::first();
+
+    $response = $this->post(route('staff.donors.store'), [
+        'full_name' => 'Walkin Rep Person',
+        'donor_type' => 'representative',
+        'hospital_id' => (string) $hospital->id,
+        'id_number' => '2024-00999',
+        'representative_full_name' => 'Juan Dela Cruz',
+        'course_id' => (string) Course::first()->id,
+        'house_heroes' => 'makabayan',
+        'instructor_name' => 'Prof Test',
+    ]);
+
+    $response->assertRedirect();
+
+    $donor = Donor::where('full_name', 'Walkin Rep Person')->first();
+    expect($donor)->not->toBeNull()
+        ->and($donor->is_walk_in)->toBe(true)
+        ->and($donor->donor_type?->value)->toBe('representative')
+        ->and($donor->data['representative_full_name'])->toBe('Juan Dela Cruz')
+        ->and($donor->data['house_heroes'])->toBe('makabayan');
 });
 
 test('pdf generation works for both public and walk-in donors on eacmed template', function () {
