@@ -176,6 +176,13 @@ class DonorController extends Controller
         return back()->with('success', 'Donor status updated.');
     }
 
+    public function destroy(Donor $donor): RedirectResponse
+    {
+        $donor->delete();
+
+        return back()->with('success', 'Donor deleted.');
+    }
+
     public function search(Request $request): JsonResponse
     {
         $query = $request->input('q');

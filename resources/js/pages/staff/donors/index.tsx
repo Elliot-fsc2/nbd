@@ -111,8 +111,11 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
     const [outcomeStatus, setOutcomeStatus] = useState(donor?.outcome_status ?? '');
     const [staffRemarks, setStaffRemarks] = useState(donor?.staff_remarks ?? '');
     const [saving, setSaving] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     if (!donor) return null;
+
+    const currentDonor = donor;
 
     const d = donor.data ?? {};
 
@@ -151,7 +154,7 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
 
     function handleSave() {
         setSaving(true);
-        router.put(staff.donors.update(donor.id).url, {
+        router.put(staff.donors.update(currentDonor.id).url, {
             outcome_status: outcomeStatus || null,
             staff_remarks: staffRemarks || null,
         }, {
@@ -162,6 +165,19 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
         });
     }
 
+    function handleDelete() {
+        if (!window.confirm(`Delete ${currentDonor.full_name}? This will permanently remove the donor and their registrations.`)) {
+            return;
+        }
+
+        setDeleting(true);
+        router.delete(staff.donors.destroy(currentDonor.id).url, {
+            preserveScroll: true,
+            onSuccess: () => onOpenChange(false),
+            onFinish: () => setDeleting(false),
+        });
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
@@ -169,18 +185,7 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
                     <DialogTitle>{donor.full_name}</DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-1">
-                    {fields.map(([label, value]) => (
-                        value ? (
-                            <div key={label} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
-                                <span className="text-muted-foreground">{label}</span>
-                                <span className="font-medium text-right max-w-[60%]">{value}</span>
-                            </div>
-                        ) : null
-                    ))}
-                </div>
-
-                <div className="mt-4 space-y-4 border-t pt-4">
+                <div className="mt-4 space-y-4 border-b pb-4">
                     <div className="space-y-2">
                         <Label htmlFor="outcome_status">Status</Label>
                         <Select value={outcomeStatus} onValueChange={setOutcomeStatus}>
@@ -206,9 +211,26 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
                         />
                     </div>
 
-                    <Button onClick={handleSave} disabled={saving} className="w-full">
-                        {saving ? 'Saving...' : 'Save Status'}
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button onClick={handleSave} disabled={saving || deleting} className="flex-1">
+                            {saving ? 'Saving...' : 'Save Status'}
+                        </Button>
+
+                        <Button onClick={handleDelete} disabled={saving || deleting} variant="destructive" className="flex-1">
+                            {deleting ? 'Deleting...' : 'Delete Donor'}
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    {fields.map(([label, value]) => (
+                        value ? (
+                            <div key={label} className="flex justify-between border-b border-gray-100 py-1.5 text-sm">
+                                <span className="text-muted-foreground">{label}</span>
+                                <span className="font-medium text-right max-w-[60%]">{value}</span>
+                            </div>
+                        ) : null
+                    ))}
                 </div>
 
                 {donor.hospital_name && !donor.hospital_name.toLowerCase().includes('luk') && (
@@ -442,6 +464,16 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
         setDateRange(undefined);
         router.visit(staff.donors.index().url, {
             preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    function handleRowDelete(donor: Donor) {
+        if (!window.confirm(`Delete ${donor.full_name}? This will permanently remove the donor and their registrations.`)) {
+            return;
+        }
+
+        router.delete(staff.donors.destroy(donor.id).url, {
             preserveScroll: true,
         });
     }
@@ -703,12 +735,13 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                 <TableHead>Completed</TableHead>
                                 <TableHead>House</TableHead>
                                 <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {donors.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={13} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={14} className="text-center text-muted-foreground">
                                         No donors found.
                                     </TableCell>
                                 </TableRow>
@@ -763,6 +796,22 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                             ) : (
                                                 <span className="text-muted-foreground text-xs">Not set</span>
                                             )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                title="Delete donor"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRowDelete(donor);
+                                                }}
+                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                            >
+                                                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))

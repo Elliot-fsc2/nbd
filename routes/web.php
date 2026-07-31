@@ -55,4 +55,5 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/donors/search', [StaffDonorController::class, 'search'])->name('donors.search');
     Route::get('/donors/{donor}/form', [StaffDonorController::class, 'form'])->name('donors.form');
     Route::put('/donors/{donor}', [StaffDonorController::class, 'update'])->name('donors.update');
+    Route::delete('/donors/{donor}', [StaffDonorController::class, 'destroy'])->name('donors.destroy');
 });

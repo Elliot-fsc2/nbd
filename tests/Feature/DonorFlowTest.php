@@ -415,3 +415,25 @@ test('pre-registered donor can be checked in via the queue', function () {
     expect($registration->status->value)->toBe('checked_in')
         ->and($registration->queue_number)->toBe('EACMED-001');
 });
+
+test('staff can delete a donor', function () {
+    seededHospital();
+    actingAsStaff();
+
+    $hospital = Hospital::first();
+    $donor = Donor::create([
+        'tracking_code' => 'DELETE-ME',
+        'donor_type' => 'student',
+        'id_number' => 'Q-006',
+        'full_name' => 'Delete Me Donor',
+        'email' => 'deleteme@gmail.com',
+        'assigned_hospital_id' => $hospital->id,
+        'status' => 'registered',
+        'data' => ['course_id' => '23'],
+    ]);
+
+    $response = $this->delete(route('staff.donors.destroy', $donor));
+
+    $response->assertRedirect();
+    expect(Donor::find($donor->id))->toBeNull();
+});
