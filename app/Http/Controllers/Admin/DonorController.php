@@ -57,6 +57,10 @@ class DonorController extends Controller
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
+        if ($walkIn = $request->get('walk_in')) {
+            $query->where('is_walk_in', $walkIn === 'walk_in');
+        }
+
         $mapHouseOfHeroes = function (?string $value): ?string {
             return match ($value) {
                 null => null,
@@ -96,6 +100,7 @@ class DonorController extends Controller
                     'hospital_name' => $donor->assignedHospital?->name,
                     'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
+                    'is_walk_in' => $donor->is_walk_in,
                     'created_at' => $donor->created_at,
                     'data' => $donor->data,
                 ];
@@ -104,7 +109,7 @@ class DonorController extends Controller
             'statuses' => $statuses,
             'outcomeStatuses' => $outcomeStatuses,
             'houseOptions' => $houseOptions,
-            'filters' => $request->only(['search', 'status', 'outcome_status', 'hospital_id', 'house', 'date_from', 'date_to']),
+            'filters' => $request->only(['search', 'status', 'outcome_status', 'hospital_id', 'house', 'walk_in', 'date_from', 'date_to']),
         ]);
     }
 
@@ -145,12 +150,16 @@ class DonorController extends Controller
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
+        if ($walkIn = $request->get('walk_in')) {
+            $query->where('is_walk_in', $walkIn === 'walk_in');
+        }
+
         $courses = Course::pluck('name', 'id');
         $donors = $query->latest()->get();
 
         $headers = [
             'ID', 'Tracking Code', 'Donor Type', 'ID Number', 'Full Name',
-            'Email', 'Contact Number', 'Hospital', 'Course', 'Status',
+            'Email', 'Contact Number', 'Hospital', 'Course', 'Status', 'Walk-in',
             'Surname', 'Given Name', 'Middle Name', 'Birthdate', 'Age',
             'Sex', 'Civil Status', 'Blood Type', 'Occupation',
             'House No', 'Street', 'Subdivision', 'Barangay', 'City/Province',
@@ -177,6 +186,7 @@ class DonorController extends Controller
                     $donor->assignedHospital?->name ?? '',
                     $courseId && $courses->has($courseId) ? $courses[$courseId] : '',
                     $donor->status?->value ?? '',
+                    $donor->is_walk_in ? 'Yes' : 'No',
                     $data['surname'] ?? '',
                     $data['given_name'] ?? '',
                     $data['middle_name'] ?? '',
@@ -207,14 +217,16 @@ class DonorController extends Controller
         ]);
     }
 
-    public function form(Donor $donor, PdfGenerationService $pdfService): SymfonyResponse
+    public function form(Request $request, Donor $donor, PdfGenerationService $pdfService): SymfonyResponse
     {
         $pdf = $pdfService->generate($donor);
 
+        $filename = 'donation-form-'.str($donor->full_name)->slug().'.pdf';
+
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf;
-        }, 'donation-form-'.str($donor->full_name)->slug().'.pdf', [
+        }, $filename, [
             'Content-Type' => 'application/pdf',
-        ]);
+        ], $request->boolean('inline') ? 'inline' : 'attachment');
     }
 }

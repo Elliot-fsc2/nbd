@@ -14,6 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import type { DateRange } from 'react-day-picker';
+import PdfPreviewDialog from '@/components/pdf-preview-dialog';
 import admin from '@/routes/admin';
 
 interface Hospital {
@@ -41,6 +42,7 @@ interface Donor {
     course_name: string | null;
     created_at: string | null;
     house_heroes_label: string | null;
+    is_walk_in: boolean;
     data: Record<string, string> | null;
 }
 
@@ -64,6 +66,7 @@ interface Props {
         outcome_status?: string;
         hospital_id?: string;
         house?: string;
+        walk_in?: string;
         date_from?: string;
         date_to?: string;
     };
@@ -89,7 +92,7 @@ const donorTypeLabels: Record<string, string> = {
     representative: 'Representative',
 };
 
-function DonorDetailDialog({ donor, open, onOpenChange }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+function DonorDetailDialog({ donor, open, onOpenChange, onPreview }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void; onPreview: (donor: Donor) => void }) {
     if (!donor) return null;
 
     const d = donor.data ?? {};
@@ -144,13 +147,9 @@ function DonorDetailDialog({ donor, open, onOpenChange }: { donor: Donor | null;
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                    <a
-                        href={admin.donors.form(donor.id)?.url || `/admin/donors/${donor.id}/form`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <Button variant="default">Download Form</Button>
-                    </a>
+                    <Button variant="default" onClick={() => onPreview(donor)}>
+                        Preview / Download Form
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>
@@ -163,7 +162,9 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
     const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
     const [houseFilter, setHouseFilter] = useState(filters.house ?? '');
     const [outcomeFilter, setOutcomeFilter] = useState(filters.outcome_status ?? '');
+    const [walkInFilter, setWalkInFilter] = useState(filters.walk_in ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+    const [previewDonor, setPreviewDonor] = useState<Donor | null>(null);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(
         filters.date_from || filters.date_to
@@ -174,7 +175,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
             : undefined,
     );
 
-    const hasActiveFilters = !!(filters.search || filters.status || filters.outcome_status || filters.hospital_id || filters.house || filters.date_from || filters.date_to);
+    const hasActiveFilters = !!(filters.search || filters.status || filters.outcome_status || filters.hospital_id || filters.house || filters.walk_in || filters.date_from || filters.date_to);
 
     function applyFilters() {
         router.visit(admin.donors.index().url, {
@@ -184,6 +185,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                 outcome_status: outcomeFilter || undefined,
                 hospital_id: hospitalId || undefined,
                 house: houseFilter || undefined,
+                walk_in: walkInFilter || undefined,
                 date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                 date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
             },
@@ -203,6 +205,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
         setOutcomeFilter('');
         setHospitalId('');
         setHouseFilter('');
+        setWalkInFilter('');
         setDateRange(undefined);
         router.visit(admin.donors.index().url, {
             preserveState: true,
@@ -247,6 +250,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         outcome_status: outcomeFilter || undefined,
                                         hospital_id: hospitalId || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -276,6 +280,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         outcome_status: val || undefined,
                                         hospital_id: hospitalId || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -305,6 +310,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         outcome_status: outcomeFilter || undefined,
                                         hospital_id: hospitalId || undefined,
                                         house: val || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -324,6 +330,33 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select key={`walkin-${walkInFilter}`} value={walkInFilter} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setWalkInFilter(val);
+                                router.visit(admin.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        status: statusFilter || undefined,
+                                        outcome_status: outcomeFilter || undefined,
+                                        hospital_id: hospitalId || undefined,
+                                        house: houseFilter || undefined,
+                                        walk_in: val || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Types</SelectItem>
+                                    <SelectItem value="walk_in">Walk-in</SelectItem>
+                                    <SelectItem value="online">Online</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Select key={`hospital-${hospitalId}`} value={hospitalId} onValueChange={(v) => {
                                 const val = v === ' ' ? '' : v;
                                 setHospitalId(val);
@@ -334,6 +367,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         outcome_status: outcomeFilter || undefined,
                                         hospital_id: val || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -365,6 +399,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                                 outcome_status: outcomeFilter || undefined,
                                                 hospital_id: hospitalId || undefined,
                                                 house: houseFilter || undefined,
+                                                walk_in: walkInFilter || undefined,
                                                 date_from: format(range.from, 'yyyy-MM-dd'),
                                                 date_to: format(range.to, 'yyyy-MM-dd'),
                                             },
@@ -396,6 +431,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         ...(filters.outcome_status ? { outcome_status: filters.outcome_status } : {}),
                                         ...(filters.hospital_id ? { hospital_id: filters.hospital_id } : {}),
                                         ...(filters.house ? { house: filters.house } : {}),
+                                        ...(filters.walk_in ? { walk_in: filters.walk_in } : {}),
                                         ...(filters.date_from ? { date_from: filters.date_from } : {}),
                                         ...(filters.date_to ? { date_to: filters.date_to } : {}),
                                     }).toString()}
@@ -441,7 +477,14 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         className="cursor-pointer"
                                         onClick={() => setSelectedDonor(donor)}
                                     >
-                                        <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {donor.full_name}
+                                            {donor.is_walk_in && (
+                                                <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                                    Walk-in
+                                                </span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
                                         <TableCell>
@@ -486,7 +529,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                             {donors.current_page > 1 && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page - 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, walk_in: filters.walk_in, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -496,7 +539,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                             {donors.current_page < donors.last_page && (
                                 <Link
                                     href={admin.donors.index().url}
-                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page + 1, search: filters.search, status: filters.status, outcome_status: filters.outcome_status, hospital_id: filters.hospital_id, house: filters.house, walk_in: filters.walk_in, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -512,6 +555,15 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                 donor={selectedDonor}
                 open={!!selectedDonor}
                 onOpenChange={(open) => { if (!open) setSelectedDonor(null); }}
+                onPreview={setPreviewDonor}
+            />
+
+            <PdfPreviewDialog
+                open={!!previewDonor}
+                onOpenChange={(open) => { if (!open) setPreviewDonor(null); }}
+                title={`Donation Form - ${previewDonor?.full_name ?? ''}`}
+                previewUrl={previewDonor ? `${admin.donors.form(previewDonor.id)?.url || `/admin/donors/${previewDonor.id}/form`}?inline=1` : ''}
+                downloadUrl={previewDonor ? admin.donors.form(previewDonor.id)?.url || `/admin/donors/${previewDonor.id}/form` : ''}
             />
         </>
     );

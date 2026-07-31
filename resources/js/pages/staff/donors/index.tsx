@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,18 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import PdfPreviewDialog from '@/components/pdf-preview-dialog';
 import staff from '@/routes/staff';
 
 interface Hospital {
     id: number;
     name: string;
     code: string;
+}
+
+interface Course {
+    id: number;
+    name: string;
 }
 
 interface SelectOption {
@@ -50,6 +56,7 @@ interface Donor {
     house_heroes_label: string | null;
     representative_for: string | null;
     hospital_name: string | null;
+    is_walk_in: boolean;
     data: Record<string, string> | null;
 }
 
@@ -67,12 +74,14 @@ interface Props {
     statuses: SelectOption[];
     outcomeStatuses: SelectOption[];
     houseOptions: SelectOption[];
+    courses: Course[];
     filters: {
         search?: string;
         hospital_id?: string;
         status?: string;
         outcome_status?: string;
         house?: string;
+        walk_in?: string;
         date_from?: string;
         date_to?: string;
     };
@@ -98,7 +107,7 @@ const statusLabels: Record<string, string> = {
     skipped: 'Skipped',
 };
 
-function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void }) {
+function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void; onPreview: (donor: Donor) => void }) {
     const [outcomeStatus, setOutcomeStatus] = useState(donor?.outcome_status ?? '');
     const [staffRemarks, setStaffRemarks] = useState(donor?.staff_remarks ?? '');
     const [saving, setSaving] = useState(false);
@@ -204,13 +213,9 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
 
                 {donor.hospital_name && !donor.hospital_name.toLowerCase().includes('luk') && (
                     <div className="mt-4 flex gap-2">
-                        <a
-                            href={staff.donors.form(donor.id)?.url || `/staff/donors/${donor.id}/form`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <Button variant="default">Download Form</Button>
-                        </a>
+                        <Button variant="default" onClick={() => onPreview(donor)}>
+                            Preview / Download Form
+                        </Button>
                     </div>
                 )}
             </DialogContent>
@@ -218,13 +223,159 @@ function DonorEditDialog({ donor, open, onOpenChange }: { donor: Donor | null; o
     );
 }
 
-export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatuses, houseOptions, filters }: Props) {
+function WalkInDonorDialog({
+    open,
+    onOpenChange,
+    hospitals,
+    houseOptions,
+    courses,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    hospitals: Hospital[];
+    houseOptions: SelectOption[];
+    courses: Course[];
+}) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        full_name: '',
+        donor_type: 'student',
+        hospital_id: '',
+        course_id: '',
+        house_heroes: '',
+        instructor_name: '',
+    });
+
+    const isStudent = data.donor_type === 'student';
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        post(staff.donors.store().url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                onOpenChange(false);
+                reset();
+            },
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Add Walk-in Donor</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="full_name">Full Name</Label>
+                        <Input
+                            id="full_name"
+                            value={data.full_name}
+                            onChange={(e) => setData('full_name', e.target.value)}
+                            placeholder="Enter full name"
+                        />
+                        {errors.full_name && <p className="text-sm text-destructive">{errors.full_name}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="donor_type">Representative or Student</Label>
+                        <Select value={data.donor_type} onValueChange={(v) => setData('donor_type', v)}>
+                            <SelectTrigger id="donor_type">
+                                <SelectValue placeholder="Select type..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="student">Student</SelectItem>
+                                <SelectItem value="representative">Representative</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.donor_type && <p className="text-sm text-destructive">{errors.donor_type}</p>}
+                    </div>
+
+                    {isStudent && (
+                        <>
+                            <div className="space-y-2">
+                                <Label htmlFor="course_id">Course</Label>
+                                <Select value={data.course_id} onValueChange={(v) => setData('course_id', v)}>
+                                    <SelectTrigger id="course_id">
+                                        <SelectValue placeholder="Select course..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {courses.map((course) => (
+                                            <SelectItem key={course.id} value={String(course.id)}>
+                                                {course.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.course_id && <p className="text-sm text-destructive">{errors.course_id}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="house_heroes">House of Heroes</Label>
+                                <Select value={data.house_heroes} onValueChange={(v) => setData('house_heroes', v)}>
+                                    <SelectTrigger id="house_heroes">
+                                        <SelectValue placeholder="Select house..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {houseOptions.map((house) => (
+                                            <SelectItem key={house.value} value={house.value}>
+                                                {house.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.house_heroes && <p className="text-sm text-destructive">{errors.house_heroes}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="instructor_name">Instructor's Name</Label>
+                                <Input
+                                    id="instructor_name"
+                                    value={data.instructor_name}
+                                    onChange={(e) => setData('instructor_name', e.target.value)}
+                                    placeholder="Enter instructor's name"
+                                />
+                                {errors.instructor_name && <p className="text-sm text-destructive">{errors.instructor_name}</p>}
+                            </div>
+                        </>
+                    )}
+
+                    <div className="space-y-2">
+                        <Label htmlFor="hospital_id">Hospital Attended</Label>
+                        <Select value={data.hospital_id} onValueChange={(v) => setData('hospital_id', v)}>
+                            <SelectTrigger id="hospital_id">
+                                <SelectValue placeholder="Select hospital..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {hospitals.map((hospital) => (
+                                    <SelectItem key={hospital.id} value={String(hospital.id)}>
+                                        {hospital.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {errors.hospital_id && <p className="text-sm text-destructive">{errors.hospital_id}</p>}
+                    </div>
+
+                    <Button type="submit" disabled={processing} className="w-full">
+                        {processing ? 'Adding...' : 'Add Donor'}
+                    </Button>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatuses, houseOptions, courses, filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
     const [statusFilter, setStatusFilter] = useState(filters.status ?? '');
     const [houseFilter, setHouseFilter] = useState(filters.house ?? '');
     const [outcomeFilter, setOutcomeFilter] = useState(filters.outcome_status ?? '');
+    const [walkInFilter, setWalkInFilter] = useState(filters.walk_in ?? '');
     const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+    const [walkInOpen, setWalkInOpen] = useState(false);
+    const [previewDonor, setPreviewDonor] = useState<Donor | null>(null);
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(
         filters.date_from || filters.date_to
@@ -235,7 +386,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
             : undefined,
     );
 
-    const hasActiveFilters = !!(filters.search || filters.status || filters.outcome_status || filters.hospital_id || filters.house || filters.date_from || filters.date_to);
+    const hasActiveFilters = !!(filters.search || filters.status || filters.outcome_status || filters.hospital_id || filters.house || filters.walk_in || filters.date_from || filters.date_to);
 
     function applyFilters() {
         router.visit(staff.donors.index().url, {
@@ -245,6 +396,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                 status: statusFilter || undefined,
                 outcome_status: outcomeFilter || undefined,
                 house: houseFilter || undefined,
+                walk_in: walkInFilter || undefined,
                 date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                 date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
             },
@@ -264,6 +416,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
         setOutcomeFilter('');
         setHospitalId('');
         setHouseFilter('');
+        setWalkInFilter('');
         setDateRange(undefined);
         router.visit(staff.donors.index().url, {
             preserveState: true,
@@ -275,7 +428,12 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
         <>
             <Head title="Donors" />
             <div className="p-6">
-                <h1 className="mb-6 text-2xl font-bold">Donors</h1>
+                <h1 className="mb-6 flex items-center justify-between text-2xl font-bold">
+                    Donors
+                    <Button type="button" onClick={() => setWalkInOpen(true)}>
+                        Add Walk-in Donor
+                    </Button>
+                </h1>
 
                 <form onSubmit={handleSearch} className="mb-4">
                     <div className="rounded-lg border bg-card p-3">
@@ -308,6 +466,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         status: statusFilter || undefined,
                                         outcome_status: outcomeFilter || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -337,6 +496,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         status: val || undefined,
                                         outcome_status: outcomeFilter || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -366,6 +526,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         status: statusFilter || undefined,
                                         outcome_status: val || undefined,
                                         house: houseFilter || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -395,6 +556,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         status: statusFilter || undefined,
                                         outcome_status: outcomeFilter || undefined,
                                         house: val || undefined,
+                                        walk_in: walkInFilter || undefined,
                                         date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
                                         date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                                     },
@@ -414,6 +576,33 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select key={`walkin-${walkInFilter}`} value={walkInFilter} onValueChange={(v) => {
+                                const val = v === ' ' ? '' : v;
+                                setWalkInFilter(val);
+                                router.visit(staff.donors.index().url, {
+                                    data: {
+                                        search: search || undefined,
+                                        hospital_id: hospitalId || undefined,
+                                        status: statusFilter || undefined,
+                                        outcome_status: outcomeFilter || undefined,
+                                        house: houseFilter || undefined,
+                                        walk_in: val || undefined,
+                                        date_from: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                                        date_to: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
+                                    },
+                                    preserveState: true,
+                                    preserveScroll: true,
+                                });
+                            }}>
+                                <SelectTrigger className="w-[150px]">
+                                    <SelectValue placeholder="Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value=" ">All Types</SelectItem>
+                                    <SelectItem value="walk_in">Walk-in</SelectItem>
+                                    <SelectItem value="online">Online</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <DateRangePicker
                                 value={dateRange}
                                 onChange={(range) => {
@@ -426,6 +615,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                                 status: statusFilter || undefined,
                                                 outcome_status: outcomeFilter || undefined,
                                                 house: houseFilter || undefined,
+                                                walk_in: walkInFilter || undefined,
                                                 date_from: format(range.from, 'yyyy-MM-dd'),
                                                 date_to: format(range.to, 'yyyy-MM-dd'),
                                             },
@@ -457,6 +647,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                         ...(filters.status ? { status: filters.status } : {}),
                                         ...(filters.outcome_status ? { outcome_status: filters.outcome_status } : {}),
                                         ...(filters.house ? { house: filters.house } : {}),
+                                        ...(filters.walk_in ? { walk_in: filters.walk_in } : {}),
                                         ...(filters.date_from ? { date_from: filters.date_from } : {}),
                                         ...(filters.date_to ? { date_to: filters.date_to } : {}),
                                     }).toString()}
@@ -509,7 +700,14 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                             setSearch('');
                                         }}
                                     >
-                                        <TableCell className="font-medium">{donor.full_name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {donor.full_name}
+                                            {donor.is_walk_in && (
+                                                <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                                    Walk-in
+                                                </span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-muted-foreground text-xs whitespace-nowrap">{donor.created_at ? format(donor.created_at, 'MMM d, yyyy h:mm a') : '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.hospital_name ?? '-'}</TableCell>
                                         <TableCell className="text-muted-foreground text-xs">{donor.id_number ?? '-'}</TableCell>
@@ -560,7 +758,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                             {donors.current_page > 1 && (
                                 <Link
                                     href={staff.donors.index().url}
-                                    data={{ page: donors.current_page - 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, outcome_status: filters.outcome_status, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page - 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, outcome_status: filters.outcome_status, house: filters.house, walk_in: filters.walk_in, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -570,7 +768,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                             {donors.current_page < donors.last_page && (
                                 <Link
                                     href={staff.donors.index().url}
-                                    data={{ page: donors.current_page + 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, outcome_status: filters.outcome_status, house: filters.house, date_from: filters.date_from, date_to: filters.date_to }}
+                                    data={{ page: donors.current_page + 1, search: filters.search, hospital_id: filters.hospital_id, status: filters.status, outcome_status: filters.outcome_status, house: filters.house, walk_in: filters.walk_in, date_from: filters.date_from, date_to: filters.date_to }}
                                     preserveState
                                     preserveScroll
                                 >
@@ -586,6 +784,23 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                 donor={selectedDonor}
                 open={!!selectedDonor}
                 onOpenChange={(open) => { if (!open) setSelectedDonor(null); }}
+                onPreview={setPreviewDonor}
+            />
+
+            <PdfPreviewDialog
+                open={!!previewDonor}
+                onOpenChange={(open) => { if (!open) setPreviewDonor(null); }}
+                title={`Donation Form - ${previewDonor?.full_name ?? ''}`}
+                previewUrl={previewDonor ? `${staff.donors.form(previewDonor.id)?.url || `/staff/donors/${previewDonor.id}/form`}?inline=1` : ''}
+                downloadUrl={previewDonor ? staff.donors.form(previewDonor.id)?.url || `/staff/donors/${previewDonor.id}/form` : ''}
+            />
+
+            <WalkInDonorDialog
+                open={walkInOpen}
+                onOpenChange={setWalkInOpen}
+                hospitals={hospitals}
+                houseOptions={houseOptions}
+                courses={courses}
             />
         </>
     );

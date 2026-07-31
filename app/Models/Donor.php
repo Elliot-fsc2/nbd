@@ -20,6 +20,7 @@ class Donor extends Model
         'email',
         'contact_number',
         'assigned_hospital_id',
+        'is_walk_in',
         'data',
         'status',
         'outcome_status',
@@ -32,6 +33,7 @@ class Donor extends Model
             'donor_type' => DonorType::class,
             'status' => DonorStatus::class,
             'outcome_status' => DonorOutcomeStatus::class,
+            'is_walk_in' => 'boolean',
             'data' => 'array',
         ];
     }

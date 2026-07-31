@@ -82,6 +82,13 @@
             display: inline-block;
         }
 
+        .fill-box {
+            border-bottom: 1px solid #000;
+            min-height: 18px;
+            line-height: 18px;
+            padding: 0 4px;
+        }
+
         .barcode-box {
             border: 1px solid #000;
             border-radius: 8px;
@@ -129,80 +136,90 @@
         <tr>
             <td width="20%">
                 <strong>Last Name</strong><br>
-                {{ $data['personal']['last_name'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['last_name'] ?? '' }}</div>
             </td>
             <td width="20%">
                 <strong>First Name</strong><br>
-                {{ $data['personal']['first_name'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['first_name'] ?? '' }}</div>
             </td>
             <td width="20%">
                 <strong>Middle Name</strong><br>
-                {{ $data['personal']['middle_name'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['middle_name'] ?? '' }}</div>
             </td>
             <td width="20%">
                 <strong>Civil Status</strong><br>
-                {{ $data['personal']['civil_status'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['civil_status'] ?? '' }}</div>
             </td>
             <td width="20%">
                 <strong>Contact No.</strong><br>
-                {{ $data['personal']['contact_no'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['contact_no'] ?? '' }}</div>
             </td>
         </tr>
         <tr>
             <td>
                 <strong>Birthdate</strong> <em>(mm/dd/yyyy)</em><br>
-                {{ $data['personal']['birthdate'] ? \Carbon\Carbon::parse($data['personal']['birthdate'])->format('m / d / Y') : '/ /' }}
+                <div class="fill-box">{{ $data['personal']['birthdate'] ? \Carbon\Carbon::parse($data['personal']['birthdate'])->format('m / d / Y') : '' }}</div>
             </td>
             <td>
                 <strong>Age</strong><br>
-                {{ $data['personal']['age'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['age'] ?? '' }}</div>
             </td>
             <td>
                 <strong>Gender</strong><br>
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? 'X' : '' }}</span> Male
-                &nbsp;
-                <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? 'X' : '' }}</span> Female
+                <div class="fill-box" style="text-align: left; white-space: nowrap;">
+                    <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Male' ? 'X' : '' }}</span> Male
+                    &nbsp;
+                    <span class="checkbox-box">{{ ($data['personal']['gender'] ?? '') == 'Female' ? 'X' : '' }}</span> Female
+                </div>
             </td>
             <td colspan="2">
                 <strong>Nationality</strong><br>
-                {{ $data['personal']['nationality'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['nationality'] ?? '' }}</div>
             </td>
         </tr>
         <tr>
             <td colspan="2">
                 <strong>E-mail address</strong><br>
-                {{ $data['personal']['email'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['email'] ?? '' }}</div>
             </td>
             <td colspan="3">
                 <strong>Occupation</strong><br>
-                {{ $data['personal']['occupation'] ?? '' }}
+                <div class="fill-box">{{ $data['personal']['occupation'] ?? '' }}</div>
             </td>
         </tr>
         <tr>
             <td colspan="5">
                 <strong>Preferred Mailing Address</strong><br>
-                <table width="100%" style="text-align: center; margin-top: 5px;">
+                <table width="100%" style="margin-top: 3px;">
                     <tr>
-                        <td width="33%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_street'] ?? '' }}</td>
-                        <td width="33%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_barangay'] ?? '' }}</td>
-                        <td width="34%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_town'] ?? '' }}</td>
-                    </tr>
-                    <tr style="font-style: italic; font-size: 8px;">
-                        <td>Number, Street, Subdivision</td>
-                        <td>Barangay</td>
-                        <td>Town/District</td>
+                        <td width="33%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_street'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">Number, Street, Subdivision</div>
+                        </td>
+                        <td width="33%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_barangay'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">Barangay</div>
+                        </td>
+                        <td width="34%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_town'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">Town/District</div>
+                        </td>
                     </tr>
                 </table>
-                <table width="100%" style="text-align: center; margin-top: 5px;">
+                <table width="100%" style="margin-top: 3px;">
                     <tr>
-                        <td width="33%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_city'] ?? '' }}</td>
-                        <td width="33%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_province'] ?? '' }}</td>
-                        <td width="34%" style="border-bottom: 1px solid #000;">{{ $data['personal']['address_zip_code'] ?? '' }}</td>
-                    </tr>
-                    <tr style="font-style: italic; font-size: 8px;">
-                        <td>City</td>
-                        <td>Province</td>
-                        <td>Zip Code</td>
+                        <td width="33%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_city'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">City</div>
+                        </td>
+                        <td width="33%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_province'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">Province</div>
+                        </td>
+                        <td width="34%">
+                            <div class="fill-box" style="text-align: left;">{{ $data['personal']['address_zip_code'] ?? '' }}</div>
+                            <div style="font-style: italic; font-size: 8px; text-align: left;">Zip Code</div>
+                        </td>
                     </tr>
                 </table>
             </td>

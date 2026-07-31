@@ -13,6 +13,8 @@ use App\Services\PdfGenerationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -22,7 +24,7 @@ class DonorController extends Controller
 {
     public function index(Request $request): Response
     {
-        $courses = Course::pluck('name', 'id');
+        $courses = Course::orderBy('name')->get(['id', 'name']);
         $hospitals = Hospital::orderBy('name')->get(['id', 'name', 'code']);
 
         $query = Donor::with('assignedHospital', 'latestRegistration');
@@ -60,6 +62,10 @@ class DonorController extends Controller
 
         if ($dateTo = $request->input('date_to')) {
             $query->whereDate('created_at', '<=', $dateTo);
+        }
+
+        if ($walkIn = $request->input('walk_in')) {
+            $query->where('is_walk_in', $walkIn === 'walk_in');
         }
 
         $mapHouseOfHeroes = function (?string $value): ?string {
@@ -105,10 +111,11 @@ class DonorController extends Controller
                     'checked_in_time' => $registration?->checked_in_at?->isoFormat('h:mm A'),
                     'called_time' => $registration?->called_at?->isoFormat('h:mm A'),
                     'completed_time' => $registration?->completed_at?->isoFormat('h:mm A'),
-                    'course_name' => isset($donor->data['course_id']) ? ($courses[$donor->data['course_id']] ?? null) : null,
+                    'course_name' => isset($donor->data['course_id']) ? ($courses->firstWhere('id', $donor->data['course_id'])?->name ?? null) : null,
                     'house_heroes_label' => $mapHouseOfHeroes($donor->data['house_heroes'] ?? null),
                     'representative_for' => $donor->data['representative_full_name'] ?? null,
                     'hospital_name' => $donor->assignedHospital?->name,
+                    'is_walk_in' => $donor->is_walk_in,
                     'created_at' => $donor->created_at,
                     'data' => $donor->data,
                 ];
@@ -117,8 +124,38 @@ class DonorController extends Controller
             'statuses' => $statuses,
             'outcomeStatuses' => $outcomeStatuses,
             'houseOptions' => $houseOptions,
-            'filters' => $request->only(['search', 'hospital_id', 'status', 'outcome_status', 'house', 'date_from', 'date_to']),
+            'courses' => $courses,
+            'filters' => $request->only(['search', 'hospital_id', 'status', 'outcome_status', 'house', 'walk_in', 'date_from', 'date_to']),
         ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s.\-\']+$/u'],
+            'donor_type' => ['required', 'string', 'in:student,representative'],
+            'hospital_id' => ['required', 'exists:hospitals,id'],
+            'course_id' => ['nullable', 'string', Rule::requiredIf($request->input('donor_type') === 'student'), 'exists:courses,id'],
+            'house_heroes' => ['nullable', 'string', Rule::requiredIf($request->input('donor_type') === 'student'), Rule::enum(HouseOfHeroes::class)],
+            'instructor_name' => ['nullable', 'string', 'max:255', 'regex:/^[\pL\pN\s.\-\']*$/u'],
+        ]);
+
+        $donor = Donor::create([
+            'tracking_code' => Str::random(10),
+            'donor_type' => $validated['donor_type'],
+            'full_name' => $validated['full_name'],
+            'email' => '',
+            'assigned_hospital_id' => $validated['hospital_id'],
+            'is_walk_in' => true,
+            'data' => [
+                'course_id' => $validated['course_id'] ?? null,
+                'house_heroes' => $validated['house_heroes'] ?? null,
+                'instructor_name' => $validated['instructor_name'] ?? null,
+            ],
+            'status' => DonorStatus::Registered,
+        ]);
+
+        return back()->with('success', 'Walk-in donor added.');
     }
 
     public function update(Request $request, Donor $donor): RedirectResponse
@@ -196,13 +233,17 @@ class DonorController extends Controller
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
+        if ($walkIn = $request->input('walk_in')) {
+            $query->where('is_walk_in', $walkIn === 'walk_in');
+        }
+
         $courses = Course::pluck('name', 'id');
         $donors = $query->latest()->get();
 
         $headers = [
             'ID', 'Tracking Code', 'Donor Type', 'ID Number', 'Full Name',
             'Email', 'Contact Number', 'Hospital', 'Course', 'Status',
-            'Outcome Status', 'Staff Remarks',
+            'Outcome Status', 'Staff Remarks', 'Walk-in',
             'Surname', 'Given Name', 'Middle Name', 'Birthdate', 'Age',
             'Sex', 'Civil Status', 'Blood Type', 'Occupation',
             'House No', 'Street', 'Subdivision', 'Barangay', 'City/Province',
@@ -231,6 +272,7 @@ class DonorController extends Controller
                     $donor->status?->value ?? '',
                     $donor->outcome_status?->value ?? '',
                     $donor->staff_remarks ?? '',
+                    $donor->is_walk_in ? 'Yes' : 'No',
                     $data['surname'] ?? '',
                     $data['given_name'] ?? '',
                     $data['middle_name'] ?? '',
@@ -261,14 +303,16 @@ class DonorController extends Controller
         ]);
     }
 
-    public function form(Donor $donor, PdfGenerationService $pdfService): SymfonyResponse
+    public function form(Request $request, Donor $donor, PdfGenerationService $pdfService): SymfonyResponse
     {
         $pdf = $pdfService->generate($donor);
 
+        $filename = 'donation-form-'.str($donor->full_name)->slug().'.pdf';
+
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf;
-        }, 'donation-form-'.str($donor->full_name)->slug().'.pdf', [
+        }, $filename, [
             'Content-Type' => 'application/pdf',
-        ]);
+        ], $request->boolean('inline') ? 'inline' : 'attachment');
     }
 }
