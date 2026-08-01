@@ -30,7 +30,7 @@ class PublicController extends Controller
 
             return redirect()->intended(match ($user->role->value) {
                 'admin' => route('admin.dashboard'),
-                'staff' => route('staff.queue'),
+                'staff', 'nstp' => route('staff.queue'),
                 default => '/',
             });
         }

@@ -77,6 +77,7 @@ function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
                         <SelectTrigger id="add-role"><SelectValue placeholder="Select role..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="staff">Staff</SelectItem>
+                            <SelectItem value="nstp">NSTP</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                     </Select>
@@ -151,6 +152,7 @@ function EditUserDialog({
                             <SelectTrigger id="edit-role"><SelectValue placeholder="Select role..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="staff">Staff</SelectItem>
+                                <SelectItem value="nstp">NSTP</SelectItem>
                                 <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                         </Select>

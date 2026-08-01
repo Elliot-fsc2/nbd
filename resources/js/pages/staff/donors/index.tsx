@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,7 +107,7 @@ const statusLabels: Record<string, string> = {
     skipped: 'Skipped',
 };
 
-function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void; onPreview: (donor: Donor) => void }) {
+function DonorEditDialog({ donor, open, onOpenChange, onPreview, canDelete }: { donor: Donor | null; open: boolean; onOpenChange: (open: boolean) => void; onPreview: (donor: Donor) => void; canDelete: boolean }) {
     const [outcomeStatus, setOutcomeStatus] = useState(donor?.outcome_status ?? '');
     const [staffRemarks, setStaffRemarks] = useState(donor?.staff_remarks ?? '');
     const [saving, setSaving] = useState(false);
@@ -216,9 +216,11 @@ function DonorEditDialog({ donor, open, onOpenChange, onPreview }: { donor: Dono
                             {saving ? 'Saving...' : 'Save Status'}
                         </Button>
 
-                        <Button onClick={handleDelete} disabled={saving || deleting} variant="destructive" className="flex-1">
-                            {deleting ? 'Deleting...' : 'Delete Donor'}
-                        </Button>
+                        {canDelete && (
+                            <Button onClick={handleDelete} disabled={saving || deleting} variant="destructive" className="flex-1">
+                                {deleting ? 'Deleting...' : 'Delete Donor'}
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -411,6 +413,8 @@ function WalkInDonorDialog({
 }
 
 export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatuses, houseOptions, courses, filters }: Props) {
+    const { auth } = usePage<{ auth: { user: { role: string } | null } }>().props;
+    const canDelete = auth.user?.role !== 'nstp';
     const [search, setSearch] = useState(filters.search ?? '');
     const [hospitalId, setHospitalId] = useState(filters.hospital_id ?? '');
     const [statusFilter, setStatusFilter] = useState(filters.status ?? '');
@@ -798,20 +802,22 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                title="Delete donor"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRowDelete(donor);
-                                                }}
-                                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                            >
-                                                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </Button>
+                                            {canDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    title="Delete donor"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRowDelete(donor);
+                                                    }}
+                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                >
+                                                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -856,6 +862,7 @@ export default function DonorsIndex({ donors, hospitals, statuses, outcomeStatus
                 open={!!selectedDonor}
                 onOpenChange={(open) => { if (!open) setSelectedDonor(null); }}
                 onPreview={setPreviewDonor}
+                canDelete={canDelete}
             />
 
             <PdfPreviewDialog

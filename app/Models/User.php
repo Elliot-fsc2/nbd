@@ -47,4 +47,9 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::Staff;
     }
+
+    public function isNstp(): bool
+    {
+        return $this->role === UserRole::Nstp;
+    }
 }

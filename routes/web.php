@@ -41,7 +41,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
 });
 
-Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
+Route::middleware(['auth', 'role:staff,nstp'])->prefix('staff')->name('staff.')->group(function () {
     Route::get('/queue', [QueueController::class, 'index'])->name('queue');
     Route::get('/events/{event}/queue', [QueueController::class, 'eventQueue'])->name('events.queue');
     Route::post('/events/{event}/checkin', [QueueController::class, 'checkIn'])->name('events.checkin');
@@ -55,5 +55,5 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
     Route::get('/donors/search', [StaffDonorController::class, 'search'])->name('donors.search');
     Route::get('/donors/{donor}/form', [StaffDonorController::class, 'form'])->name('donors.form');
     Route::put('/donors/{donor}', [StaffDonorController::class, 'update'])->name('donors.update');
-    Route::delete('/donors/{donor}', [StaffDonorController::class, 'destroy'])->name('donors.destroy');
+    Route::delete('/donors/{donor}', [StaffDonorController::class, 'destroy'])->middleware('role:staff')->name('donors.destroy');
 });

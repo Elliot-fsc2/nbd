@@ -29,7 +29,7 @@ class AuthController extends Controller
 
             return match ($user->role->value) {
                 'admin' => redirect()->intended(route('admin.dashboard')),
-                'staff' => redirect()->intended(route('staff.queue')),
+                'staff', 'nstp' => redirect()->intended(route('staff.queue')),
                 default => redirect()->intended('/'),
             };
         }
